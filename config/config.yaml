@@ -1,0 +1,32 @@
+seed: 66666
+model: DiaMond
+modality: multi
+split: 1
+
+dataset_path: /path/to/dataset
+class_num: 3
+reweight: False
+with_mri: True
+with_pet: True
+img_size: 128
+batch_size: 16
+
+### model
+block_size: 32
+patch_size: 8
+in_chans: 1
+dim: 512
+depth: 4
+heads: 8
+dropout: 0.0
+
+lr: 0.0005
+weight_decay: 0.00001
+optimizer: adamW
+scheduler: CosineAnnealingLR
+epochs: 150
+warmup_steps: 10
+
+save: True
+test: False
+pretrained: Null
