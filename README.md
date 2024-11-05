@@ -58,3 +58,8 @@ If you find this repository useful, please consider giving a star 🌟 and citin
     url={https://arxiv.org/abs/2410.23219},
 }
 ```
+
+WACV 2025 proceedings:
+```bibtex
+Coming soon
+```
