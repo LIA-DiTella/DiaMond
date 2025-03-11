@@ -10,12 +10,34 @@ Official Pytorch Implementation of Paper - 💎 DiaMond: Dementia Diagnosis with
 
 ## Installation
 
-1. Create environment: `conda env create -n diamond --file requirements.yaml`
-2. Activate environment: `conda activate diamond`
+1. Set up the environment:
+```bash
+make env
+```
+
+2. Activate the environment:
+```bash
+conda activate diamond
+```
+
+Note: If the environment already exists, it will not be recreated. To force update use:
+```bash
+make env-update
+```
 
 ## Data
 
-We used data from [Alzheimer's Disease Neuroimaging Initiative (ADNI)](https://adni.loni.usc.edu/) and [Japanese Alzheimer's Disease Neuroimaging Initiative (J-ADNI)](https://pubmed.ncbi.nlm.nih.gov/29753531/). Since we are not allowed to share our data, you would need to process the data yourself. Data for training, validation, and testing should be stored in separate [HDF5](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) files, using the following hierarchical format:
+We used data from [Alzheimer's Disease Neuroimaging Initiative (ADNI)](https://adni.loni.usc.edu/) and [Japanese Alzheimer's Disease Neuroimaging Initiative (J-ADNI)](https://pubmed.ncbi.nlm.nih.gov/29753531/). 
+
+To prepare the data:
+
+1. Download ADNI data manually and place in `data/raw/{train,val,test}` directories
+2. Run data processing:
+```bash
+make data
+```
+
+Data for training, validation, and testing will be processed into separate [HDF5](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) files, using the following hierarchical format:
 
 1. First level: A unique identifier, e.g. image ID.
 2. The second level always has the following entries:
