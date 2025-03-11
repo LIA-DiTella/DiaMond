@@ -9,11 +9,24 @@ import torch
 
 
 class LARS(torch.optim.Optimizer):
-    def __init__(self, params, lr, weight_decay=0, momentum=0.9, eta=0.001,
-                 weight_decay_filter=None, lars_adaptation_filter=None):
-        defaults = dict(lr=lr, weight_decay=weight_decay, momentum=momentum,
-                        eta=eta, weight_decay_filter=weight_decay_filter,
-                        lars_adaptation_filter=lars_adaptation_filter)
+    def __init__(
+        self,
+        params,
+        lr,
+        weight_decay=0,
+        momentum=0.9,
+        eta=0.001,
+        weight_decay_filter=None,
+        lars_adaptation_filter=None,
+    ):
+        defaults = dict(
+            lr=lr,
+            weight_decay=weight_decay,
+            momentum=momentum,
+            eta=eta,
+            weight_decay_filter=weight_decay_filter,
+            lars_adaptation_filter=lars_adaptation_filter,
+        )
         super().__init__(params, defaults)
 
     @torch.no_grad()
@@ -24,54 +37,73 @@ class LARS(torch.optim.Optimizer):
                 loss = closure()
 
         for g in self.param_groups:
-            for p in g['params']:
+            for p in g["params"]:
                 dp = p.grad
 
                 if dp is None:
                     continue
 
-                if g['weight_decay_filter'] is None or not g['weight_decay_filter'](p):
-                    dp = dp.add(p, alpha=g['weight_decay'])
+                if g["weight_decay_filter"] is None or not g["weight_decay_filter"](p):
+                    dp = dp.add(p, alpha=g["weight_decay"])
 
-                if g['lars_adaptation_filter'] is None or not g['lars_adaptation_filter'](p):
+                if g["lars_adaptation_filter"] is None or not g[
+                    "lars_adaptation_filter"
+                ](p):
                     param_norm = torch.norm(p)
                     update_norm = torch.norm(dp)
                     one = torch.ones_like(param_norm)
-                    q = torch.where(param_norm > 0.,
-                                    torch.where(update_norm > 0,
-                                                (g['eta'] * param_norm / update_norm), one), one)
+                    q = torch.where(
+                        param_norm > 0.0,
+                        torch.where(
+                            update_norm > 0, (g["eta"] * param_norm / update_norm), one
+                        ),
+                        one,
+                    )
                     dp = dp.mul(q)
 
                 param_state = self.state[p]
-                if 'mu' not in param_state:
-                    param_state['mu'] = torch.zeros_like(p)
-                mu = param_state['mu']
-                mu.mul_(g['momentum']).add_(dp)
+                if "mu" not in param_state:
+                    param_state["mu"] = torch.zeros_like(p)
+                mu = param_state["mu"]
+                mu.mul_(g["momentum"]).add_(dp)
 
-                p.add_(mu, alpha=-g['lr'])
+                p.add_(mu, alpha=-g["lr"])
         return loss
 
 
 class CosineWarmupScheduler(torch.optim.lr_scheduler._LRScheduler):
     def __init__(
-            self,
-            optimizer: torch.optim.Optimizer,
-            max_steps: int,
-            warmup_steps: int,
-            lr: float,
-            batch_size: int,
-            last_epoch: int = -1,
-            verbose: bool = False,
-            end_lr: float = None,
-            freq: int = 1,
+        self,
+        optimizer: torch.optim.Optimizer,
+        max_steps: int,
+        warmup_steps: int,
+        lr: float,
+        batch_size: int,
+        last_epoch: int = -1,
+        end_lr: float = None,
+        freq: int = 1,
     ):
+        """
+        Cosine learning rate scheduler with warmup.
+
+        Args:
+            optimizer: The optimizer to update
+            max_steps: Total number of steps
+            warmup_steps: Number of warmup steps
+            lr: Base learning rate
+            batch_size: Batch size used for scaling learning rate
+            last_epoch: The index of the last epoch
+            end_lr: Final learning rate at the end of schedule
+            freq: Frequency of updates
+        """
         self.max_steps = max_steps
         self.warmup_steps = warmup_steps
         self.batch_size = batch_size
         self.lr = lr
         self.end_lr = end_lr
         self.freq = freq
-        super().__init__(optimizer, last_epoch, verbose)
+        # Eliminamos el parámetro verbose de la llamada al constructor padre
+        super().__init__(optimizer, last_epoch)
 
     def get_lr(self):
         step = self.last_epoch
