@@ -1,0 +1,15 @@
+name: diamond
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  - jupyter
+  - numpy
+  - pandas
+  - matplotlib
+  - scikit-learn
+  - pip:
+    - requests
+    - tqdm

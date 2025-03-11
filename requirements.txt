@@ -1,0 +1,28 @@
+# Dependencias principales
+torch>=1.13.0
+torchvision>=0.14.0
+numpy>=1.23.0
+nibabel>=4.0.0
+h5py>=3.8.0
+pandas>=1.5.0
+torchio>=0.18.84
+monai>=1.1.0
+einops>=0.6.0
+pyyaml>=6.0.0
+scikit-learn>=1.2.0
+
+# Herramientas de logging y experimentación
+wandb>=0.15.0
+
+# Testing
+pytest>=7.3.1
+hypothesis>=6.72.1
+pytest-cov>=4.1.0
+
+# Pipeline de ZenML
+zenml>=0.40.0
+
+# Opciones para GPU
+# Descomenta estas líneas si necesitas soporte para CUDA específico
+# torch-cuda>=11.7.0
+# monai-cuda>=0.8.0
