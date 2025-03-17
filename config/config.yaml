@@ -3,7 +3,8 @@ model: DiaMond
 modality: multi
 split: 1
 
-dataset_path: /path/to/dataset
+# Cambiamos dataset_path para que apunte al directorio donde están los archivos split-X.h5
+dataset_path: /Users/nacho/Desktop/code/DiaMond/data/processed/hdf5
 class_num: 3
 reweight: False
 with_mri: True
@@ -20,13 +21,19 @@ depth: 4
 heads: 8
 dropout: 0.0
 
-lr: 0.0005
+lr: 0.001
 weight_decay: 0.00001
 optimizer: adamW
 scheduler: CosineAnnealingLR
-epochs: 150
+epochs: 100
 warmup_steps: 10
 
 save: True
 test: False
 pretrained: Null
+
+### wandb config
+use_wandb: False
+wandb_project: DiaMond
+wandb_entity: pardo
+wandb_name: null # Will be auto-generated if null

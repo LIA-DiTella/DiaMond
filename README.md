@@ -62,26 +62,19 @@ After specifying the config file, simply start training/evaluation by:
 python src/train.py
 ```
 
-## Contacts
+## Misc
 
-For any questions, please contact: Yitong Li (yi_tong.li@tum.de)
+This project uses:
 
-
-If you find this repository useful, please consider giving a star 🌟 and citing the paper:
-
-```bibtex
-@inproceedings{li2024diamond,
-    title={DiaMond: Dementia Diagnosis with Multi-Modal Vision Transformers Using MRI and PET},
-    author={Li, Yitong and Ghahremani, Morteza and Wally, Youssef and Wachinger, Christian},
-    eprint={2410.23219},
-    archivePrefix={arXiv},
-    primaryClass={cs.CV},
-    year={2024},
-    url={https://arxiv.org/abs/2410.23219},
-}
-```
-
-WACV 2025 proceedings:
-```bibtex
-Coming soon
-```
+- [Make](https://www.gnu.org/software/make/) for automation.
+- [Ruff](https://docs.astral.sh/ruff/) for code linting and formatting.
+- [Hypothesis](https://hypothesis.readthedocs.io/en/latest/) for property-based testing.
+- [unittest](https://docs.python.org/3/library/unittest.html) for unit testing.
+- [PyTorch](https://pytorch.org/) for deep learning models.
+- [Wandb](https://wandb.ai/) for experiment tracking.
+- [Scikit-learn](https://scikit-learn.org/) for metrics and evaluation.
+- [Nibabel](https://nipy.org/nibabel/) for neuroimaging data handling.
+- [dicom2nifti](https://github.com/icometrix/dicom2nifti) and [dcm2niix](https://github.com/rordenlab/dcm2niix) for DICOM to NIFTI conversion.
+- [einops](https://github.com/arogozhnikov/einops) for tensor operations.
+- [tqdm](https://tqdm.github.io/) for progress bar visualization.
+- [PyDICOM](https://pydicom.github.io/) for DICOM file handling.

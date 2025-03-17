@@ -4,9 +4,9 @@ import wandb
 import numpy as np
 import torch
 import torch.nn as nn
-
-# import torch.nn.functional as F
-# import torch.optim as optim
+import argparse
+import sys
+from pathlib import Path
 
 import yaml
 from sklearn.metrics import (
@@ -35,6 +35,44 @@ warnings.warn = warn
 
 print(f"Torch: {torch.__version__}")
 print(f"Cuda Available: {torch.cuda.is_available()}")
+
+##################################################################################
+# Command line arguments
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Training script for DiaMond model")
+    parser.add_argument(
+        "--config", type=str, default=None, help="Path to config yaml file"
+    )
+    parser.add_argument(
+        "--dataset_path", type=str, default=None, help="Path to the dataset"
+    )
+    parser.add_argument("--img_size", type=int, default=None, help="Image size")
+    parser.add_argument(
+        "--batch_size", type=int, default=None, help="Batch size for training"
+    )
+    parser.add_argument("--num_epochs", type=int, default=None, help="Number of epochs")
+    parser.add_argument(
+        "--learning_rate", type=float, default=None, help="Learning rate"
+    )
+    parser.add_argument(
+        "--num_classes", type=int, default=None, help="Number of classes"
+    )
+    parser.add_argument(
+        "--model_dir", type=str, default=None, help="Directory to save models"
+    )
+    parser.add_argument("--test", action="store_true", help="Test mode")
+    parser.add_argument("--wandb", action="store_true", help="Enable wandb logging")
+    parser.add_argument("--wandb_key", type=str, default=None, help="Wandb API key")
+    parser.add_argument(
+        "--wandb_project", type=str, default="DiaMond", help="Wandb project name"
+    )
+    parser.add_argument(
+        "--wandb_entity", type=str, default="pardo", help="Wandb team/entity name"
+    )
+    return parser.parse_args()
+
 
 ##################################################################################
 # functions
@@ -400,11 +438,67 @@ def test(
 ############################################################################################
 
 if __name__ == "__main__":
+    args = parse_args()
     cuda_id = 0
     device = torch.device(f"cuda:{cuda_id}" if torch.cuda.is_available() else "cpu")
 
-    with open("../config/config.yaml", "r") as file:
+    # Determine the config file path
+    if args.config:
+        config_path = args.config
+    else:
+        # Try to find the config file in standard locations
+        script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
+        project_root = script_dir.parent
+        possible_paths = [
+            project_root / "config" / "config.yaml",
+            script_dir / "config" / "config.yaml",
+            script_dir / ".." / "config" / "config.yaml",
+            Path("config/config.yaml"),
+            Path("../config/config.yaml"),
+        ]
+
+        config_path = None
+        for path in possible_paths:
+            if path.exists():
+                config_path = path
+                break
+
+        if not config_path:
+            print("Error: Config file not found. Please specify with --config")
+            sys.exit(1)
+
+    print(f"Using config file: {config_path}")
+    with open(config_path, "r") as file:
         config = yaml.safe_load(file)
+
+    # Override config with command line arguments
+    if args.dataset_path:
+        config["dataset_path"] = args.dataset_path
+    if args.img_size:
+        config["img_size"] = args.img_size
+    if args.batch_size:
+        config["batch_size"] = args.batch_size
+    if args.num_epochs:
+        config["epochs"] = args.num_epochs
+    if args.learning_rate:
+        config["lr"] = args.learning_rate
+    if args.num_classes:
+        config["class_num"] = args.num_classes
+    if args.test:
+        config["test"] = True
+
+    # Configure Wandb
+    wandb_mode = "disabled"
+    if args.wandb:
+        wandb_mode = "online"
+        if args.wandb_key:
+            try:
+                wandb.login(key=args.wandb_key)
+                print("Successfully logged in to Wandb")
+            except Exception as e:
+                print(f"Error logging in to Wandb: {e}")
+                print("Continuing without Wandb logging")
+                wandb_mode = "disabled"
 
     experiment_name = "mri+pet"
 
@@ -428,28 +522,42 @@ if __name__ == "__main__":
         "sigma_MIN": 0.0,
     }
 
+    # Create model directories if needed
+    if args.model_dir:
+        os.makedirs(args.model_dir, exist_ok=True)
+        experiment_dir = os.path.join(args.model_dir, config["model"], experiment_name)
+        os.makedirs(experiment_dir, exist_ok=True)
+
     for split in range(0, 5):
         run = wandb.init(
-            project="DiaMond",
-            entity="",
+            project=args.wandb_project,
+            entity=args.wandb_entity,
             notes=experiment_name,
             tags=[],
             config=config,
-            mode="disabled",
+            mode=wandb_mode,
+            reinit=True,
+            name=f"{config['model']}_{config['modality']}_split{split}",
         )
         seed_everything(wandb.config.seed)
         dataset_path = wandb.config.dataset_path
 
         if not (wandb.config.test):
+            # Añadamos un log para depurar las rutas
+            split_train_path = f"{dataset_path}/{split}-train.h5"
+            print(f"Loading training data from: {split_train_path}")
             train_data = AdniDataset(
-                path=f"{dataset_path}/{split}-train.h5",
+                path=split_train_path,
                 is_training=True,
                 out_class_num=wandb.config.class_num,
                 with_mri=wandb.config.with_mri,
                 with_pet=wandb.config.with_pet,
             )
+
+            split_valid_path = f"{dataset_path}/{split}-valid.h5"
+            print(f"Loading validation data from: {split_valid_path}")
             valid_data = AdniDataset(
-                path=f"{dataset_path}/{split}-valid.h5",
+                path=split_valid_path,
                 is_training=False,
                 out_class_num=wandb.config.class_num,
                 with_mri=wandb.config.with_mri,
@@ -471,8 +579,10 @@ if __name__ == "__main__":
                 drop_last=False,
             )
         else:
+            split_test_path = f"{dataset_path}/{split}-test.h5"
+            print(f"Loading test data from: {split_test_path}")
             test_data = AdniDataset(
-                path=f"{dataset_path}/{split}-test.h5",
+                path=split_test_path,
                 is_training=False,
                 out_class_num=wandb.config.class_num,
                 with_mri=wandb.config.with_mri,
@@ -774,6 +884,9 @@ if __name__ == "__main__":
                     f"Split-{split}: test_bacc: {test_accuracy}, f1: {f1}, auc: {auc}, cm: {cm}, precision: {precision}, recall: {recall}\n"
                 )
 
+        # Make sure to finish the run at the end of each split
+        wandb.finish()
+
     if wandb.config.test:
         cm = np.sum(np.array(test_cm), axis=0)
         print("=======Finished Testing with Average of splits=======")
@@ -789,11 +902,11 @@ if __name__ == "__main__":
 
         cm = str(cm).replace("\n", " ")
         print(
-            f"test_bacc: {np.mean(test_bacc):.6f} +- {np.std(test_bacc):.6f}, \
-                test_f1: {np.mean(test_f1):.6f} +- {np.std(test_f1):.6f}, \
-                test_auc: {np.mean(test_auc):.6f} +- {np.std(test_auc):.6f}, cm: {cm}, \
-                test_precision: {np.mean(test_precision):.6f} +- {np.std(test_precision):.6f}, \
-                test_recall: {np.mean(test_recall):.6f} +- {np.std(test_recall):.6f}"
+            f"test_bacc: {np.mean(test_bacc):.6f} +- {np.std(test_bacc):.6f}, "
+            f"test_f1: {np.mean(test_f1):.6f} +- {np.std(test_f1):.6f}, "
+            f"test_auc: {np.mean(test_auc):.6f} +- {np.std(test_auc):.6f}, cm: {cm}, "
+            f"test_precision: {np.mean(test_precision):.6f} +- {np.std(test_precision):.6f}, "
+            f"test_recall: {np.mean(test_recall):.6f} +- {np.std(test_recall):.6f}"
         )
 
         with open(
@@ -801,9 +914,9 @@ if __name__ == "__main__":
             "a",
         ) as f:
             f.write(
-                f"Mean test_bacc: {np.mean(test_bacc):.6f} +- {np.std(test_bacc):.6f}, \
-            test_f1: {np.mean(test_f1):.6f} +- {np.std(test_f1):.6f}, \
-            test_auc: {np.mean(test_auc):.6f} +- {np.std(test_auc):.6f}, cm: {cm}, \
-            test_precision: {np.mean(test_precision):.6f} +- {np.std(test_precision):.6f}, \
-            test_recall: {np.mean(test_recall):.6f} +- {np.std(test_recall):.6f}\n\n"
+                f"Mean test_bacc: {np.mean(test_bacc):.6f} +- {np.std(test_bacc):.6f}, "
+                f"test_f1: {np.mean(test_f1):.6f} +- {np.std(test_f1):.6f}, "
+                f"test_auc: {np.mean(test_auc):.6f} +- {np.std(test_auc):.6f}, cm: {cm}, "
+                f"test_precision: {np.mean(test_precision):.6f} +- {np.std(test_precision):.6f}, "
+                f"test_recall: {np.mean(test_recall)::.6f} +- {np.std(test_recall):.6f}\n\n"
             )

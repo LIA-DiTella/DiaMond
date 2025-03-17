@@ -1,0 +1,733 @@
+nacho@Chonas-M1-MacBook-Pro-227 DiaMond % find ./src/data/data/ADNI\ Data -type d -depth 4 | sort 
+./src/data/data/ADNI Data/003_S_1059/B1-calibration_Body/2006-11-09_17_40_00.0/I29247
+./src/data/data/ADNI Data/003_S_1059/B1-calibration_Head/2006-11-09_17_38_38.0/I29248
+./src/data/data/ADNI Data/003_S_1059/MPRAGE/2006-11-09_17_28_06.0/I29252
+./src/data/data/ADNI Data/003_S_1059/MPRAGE_Repeat/2006-11-09_17_37_45.0/I29251
+./src/data/data/ADNI Data/003_S_1059/PET_WB/2007-01-10_11_15_31.0/I36366
+./src/data/data/ADNI Data/003_S_1122/B1-calibration_Body/2006-12-06_11_49_29.0/I32040
+./src/data/data/ADNI Data/003_S_1122/B1-calibration_Head/2006-12-06_11_48_10.0/I32039
+./src/data/data/ADNI Data/003_S_1122/MPRAGE/2006-12-06_11_37_39.0/I32044
+./src/data/data/ADNI Data/003_S_1122/MPRAGE/2006-12-06_12_07_07.0/I32045
+./src/data/data/ADNI Data/003_S_1122/MPRAGE_Repeat/2006-12-06_11_47_18.0/I32043
+./src/data/data/ADNI Data/003_S_1122/research/2007-01-25_10_25_00.0/I37465
+./src/data/data/ADNI Data/003_S_1257/ADNI/2007-05-10_10_51_25.0/I54071
+./src/data/data/ADNI Data/003_S_1257/B1-calibration_Body/2007-03-01_10_33_22.0/I42132
+./src/data/data/ADNI Data/003_S_1257/B1-calibration_Head/2007-03-01_10_31_55.0/I42133
+./src/data/data/ADNI Data/003_S_1257/MPRAGE/2007-03-01_10_20_36.0/I42137
+./src/data/data/ADNI Data/003_S_1257/MPRAGE_Repeat/2007-03-01_10_31_03.0/I42136
+./src/data/data/ADNI Data/003_S_6264/ADNI3_FDG__AC_/2018-10-01_12_58_03.0/I1055577
+./src/data/data/ADNI Data/003_S_6264/Accelerated_Sagittal_MPRAGE/2018-06-04_13_53_15.0/I1005735
+./src/data/data/ADNI Data/003_S_6264/Axial_3D_PASL__Eyes_Open_/2018-06-04_13_53_15.0/I1005754
+./src/data/data/ADNI Data/003_S_6264/Perfusion_Weighted/2018-06-04_13_53_15.0/I1005755
+./src/data/data/ADNI Data/003_S_6264/Sagittal_3D_FLAIR/2018-06-04_13_53_15.0/I1005742
+.
+.
+.
+
+
+nacho@Chonas-M1-MacBook-Pro-227 DiaMond % find ./src/data/data/ADNI\ Metadata -type d -depth 4 | sort
+./src/data/data/ADNI Metadata/003_S_1059/B1-calibration_Body/2006-11-09_17_40_00.0/I29247
+./src/data/data/ADNI Metadata/003_S_1059/B1-calibration_Head/2006-11-09_17_38_38.0/I29248
+./src/data/data/ADNI Metadata/003_S_1059/MPRAGE/2006-11-09_17_28_06.0/I29252
+./src/data/data/ADNI Metadata/003_S_1059/MPRAGE_Repeat/2006-11-09_17_37_45.0/I29251
+./src/data/data/ADNI Metadata/003_S_1059/PET_WB/2007-01-10_11_15_31.0/I36366
+./src/data/data/ADNI Metadata/003_S_1122/B1-calibration_Body/2006-12-06_11_49_29.0/I32040
+./src/data/data/ADNI Metadata/003_S_1122/B1-calibration_Head/2006-12-06_11_48_10.0/I32039
+./src/data/data/ADNI Metadata/003_S_1122/MPRAGE/2006-12-06_11_37_39.0/I32044
+./src/data/data/ADNI Metadata/003_S_1122/MPRAGE/2006-12-06_12_07_07.0/I32045
+./src/data/data/ADNI Metadata/003_S_1122/MPRAGE_Repeat/2006-12-06_11_47_18.0/I32043
+./src/data/data/ADNI Metadata/003_S_1122/research/2007-01-25_10_25_00.0/I37465
+./src/data/data/ADNI Metadata/003_S_1257/ADNI/2007-05-10_10_51_25.0/I54071
+./src/data/data/ADNI Metadata/003_S_1257/B1-calibration_Body/2007-03-01_10_33_22.0/I42132
+./src/data/data/ADNI Metadata/003_S_1257/B1-calibration_Head/2007-03-01_10_31_55.0/I42133
+./src/data/data/ADNI Metadata/003_S_1257/MPRAGE/2007-03-01_10_20_36.0/I42137
+./src/data/data/ADNI Metadata/003_S_1257/MPRAGE_Repeat/2007-03-01_10_31_03.0/I42136
+./src/data/data/ADNI Metadata/003_S_6264/ADNI3_FDG__AC_/2018-10-01_12_58_03.0/I1055577
+./src/data/data/ADNI Metadata/003_S_6264/Accelerated_Sagittal_MPRAGE/2018-06-04_13_53_15.0/I1005735
+./src/data/data/ADNI Metadata/003_S_6264/Axial_3D_PASL__Eyes_Open_/2018-06-04_13_53_15.0/I1005754
+./src/data/data/ADNI Metadata/003_S_6264/Perfusion_Weighted/2018-06-04_13_53_15.0/I1005755
+./src/data/data/ADNI Metadata/003_S_6264/Sagittal_3D_FLAIR/2018-06-04_13_53_15.0/I1005742
+.
+.
+.
+
+nacho@Chonas-M1-MacBook-Pro-227 DiaMond % tree ./src/data/data/ADNI\ Metadata/003_S_1059/                                         
+./src/data/data/ADNI Metadata/003_S_1059/
+├── B1-calibration_Body
+│   └── 2006-11-09_17_40_00.0
+│       └── I29247
+│           └── S22297I29247.xml
+├── B1-calibration_Head
+│   └── 2006-11-09_17_38_38.0
+│       └── I29248
+│           └── S22298I29248.xml
+├── MPRAGE
+│   └── 2006-11-09_17_28_06.0
+│       └── I29252
+│           └── S22301I29252.xml
+├── MPRAGE_Repeat
+│   └── 2006-11-09_17_37_45.0
+│       └── I29251
+│           └── S22300I29251.xml
+└── PET_WB
+    └── 2007-01-10_11_15_31.0
+        └── I36366
+            └── I36366.xml
+
+15 directories, 5 files
+
+
+nacho@Chonas-M1-MacBook-Pro-227 DiaMond % find ./src/data/data/ADNI\ Dataset -type d -depth 4 | sort
+./src/data/data/ADNI Dataset/005_S_0223/30_min_3D_FDG_4i_16s_/2006-03-16_09_53_09.0/I12075
+./src/data/data/ADNI Dataset/005_S_0546/30_min_3D_FDG_4i_16s_/2006-06-30_10_13_21.0/I17723
+./src/data/data/ADNI Dataset/011_S_0005/30_min_3D_FDG_4i_16s_/2005-09-29_08_54_12.0/I7327
+./src/data/data/ADNI Dataset/011_S_0016/30_min_3D_FDG_4i_16s_/2005-10-20_08_54_01.0/I8090
+./src/data/data/ADNI Dataset/011_S_0183/30_min_3D_FDG_4i_16s_/2006-04-19_08_02_58.0/I13807
+./src/data/data/ADNI Dataset/016_S_0354/DYN_3D__6i_16s_/2006-06-22_07_05_13.0/I17384
+./src/data/data/ADNI Dataset/016_S_0359/DYN_3D__6i_16s_/2006-06-13_05_37_49.0/I17011
+./src/data/data/ADNI Dataset/024_S_1171/30_min_3D_FDG_4i_16s_/2007-01-26_11_33_46.0/I37544
+./src/data/data/ADNI Dataset/035_S_0048/3D_Neuro_Dyna_4i_16s_/2005-12-19_08_37_59.0/I11516
+./src/data/data/ADNI Dataset/035_S_0341/3D_Neuro_Dyna_4i_16s_/2006-05-24_09_42_51.0/I16238
+./src/data/data/ADNI Dataset/098_S_0160/BRAIN_DYN_EM_6i_16s_/2006-03-23_16_16_34.0/I12406
+.
+.
+.
+
+nacho@Chonas-M1-MacBook-Pro-227 DiaMond % tree ./src/data/data/ADNI\ Dataset/           
+./src/data/data/ADNI Dataset/
+├── 005_S_0223
+│   └── 30_min_3D_FDG_4i_16s_
+│       └── 2006-03-16_09_53_09.0
+│           └── I12075
+│               └── ADNI_005_S_0223_PET_30_min_3D_FDG_4i_16s__br_raw_20060316142322000.v
+├── 005_S_0546
+│   └── 30_min_3D_FDG_4i_16s_
+│       └── 2006-06-30_10_13_21.0
+│           └── I17723
+│               └── ADNI_005_S_0546_PET_30_min_3D_FDG_4i_16s__br_raw_20060630122924812.v
+├── 011_S_0005
+│   └── 30_min_3D_FDG_4i_16s_
+│       └── 2005-09-29_08_54_12.0
+│           └── I7327
+│               └── ADNI_011_S_0005_PET_30_min_3D_FDG_4i_16s__br_raw_20050929132141062.v
+├── 011_S_0016
+│   └── 30_min_3D_FDG_4i_16s_
+│       └── 2005-10-20_08_54_01.0
+│           └── I8090
+│               └── ADNI_011_S_0016_PET_30_min_3D_FDG_4i_16s__br_raw_20051020124317073.v
+├── 011_S_0183
+│   └── 30_min_3D_FDG_4i_16s_
+│       └── 2006-04-19_08_02_58.0
+│           └── I13807
+│               └── ADNI_011_S_0183_PET_30_min_3D_FDG_4i_16s__br_raw_20060419132132671.v
+├── 016_S_0354
+│   └── DYN_3D__6i_16s_
+│       └── 2006-06-22_07_05_13.0
+│           └── I17384
+│               └── ADNI_016_S_0354_PET_DYN_3D__6i_16s__br_raw_20060622141907496.v
+├── 016_S_0359
+│   └── DYN_3D__6i_16s_
+│       └── 2006-06-13_05_37_49.0
+│           └── I17011
+│               └── ADNI_016_S_0359_PET_DYN_3D__6i_16s__br_raw_20060615111550029.v
+├── 024_S_1171
+│   └── 30_min_3D_FDG_4i_16s_
+│       └── 2007-01-26_11_33_46.0
+│           └── I37544
+│               └── ADNI_024_S_1171_PET_30_min_3D_FDG_4i_16s__br_raw_20070129113707028.v
+├── 035_S_0048
+│   └── 3D_Neuro_Dyna_4i_16s_
+│       └── 2005-12-19_08_37_59.0
+│           └── I11516
+│               └── ADNI_035_S_0048_PET_3D_Neuro_Dyna_4i_16s__br_raw_20060301142535796.v
+├── 035_S_0341
+│   └── 3D_Neuro_Dyna_4i_16s_
+│       └── 2006-05-24_09_42_51.0
+│           └── I16238
+│               └── ADNI_035_S_0341_PET_3D_Neuro_Dyna_4i_16s__br_raw_20060531123639156.v
+└── 098_S_0160
+    └── BRAIN_DYN_EM_6i_16s_
+        └── 2006-03-23_16_16_34.0
+            └── I12406
+                └── ADNI_098_S_0160_PET_BRAIN_DYN_EM_6i_16s__br_raw_20060324155835531.v
+
+44 directories, 11 files
+
+nacho@Chonas-M1-MacBook-Pro-227 DiaMond % tree ./src/data/data/ADNI\ Data/003_S_1059/
+./src/data/data/ADNI Data/003_S_1059/
+├── B1-calibration_Body
+│   └── 2006-11-09_17_40_00.0
+│       └── I29247
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095034453_82_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095034531_83_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095034843_84_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095034906_85_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095035000_86_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095035078_87_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095035171_88_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095035250_89_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095035343_90_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095035453_91_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095035531_92_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095035625_93_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095035703_94_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095035781_95_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095036078_96_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095047343_1_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095047421_2_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095047500_3_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095047625_4_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095047703_5_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095047796_6_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095047875_7_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095047953_8_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095048031_9_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095048109_10_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095048203_11_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095048515_12_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095048609_13_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095048687_14_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095048765_15_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095048859_16_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095048937_17_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095049015_18_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095049093_19_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095049187_20_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095049265_21_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095049343_22_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095049437_23_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095049515_24_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095049812_25_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095049921_26_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095049984_27_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095050078_28_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095050156_29_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095050265_30_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095050343_31_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095050421_32_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095050500_33_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095050656_34_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095050734_35_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095051031_36_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095051125_37_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095051218_38_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095051281_39_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095051375_40_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095051453_41_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095051546_42_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095051703_43_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095051781_44_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095051875_45_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095051953_46_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095052031_47_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095052328_48_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095052390_49_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095052484_50_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095052562_51_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095052640_52_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095052718_53_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095052796_54_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095052875_55_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095052968_56_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095053031_57_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095053125_58_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095053187_59_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095053500_60_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095053625_61_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095053703_62_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095053828_63_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095053921_64_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095053984_65_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095054062_66_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095054140_67_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095054250_68_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095054328_69_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095054406_70_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095054484_71_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095054562_72_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095054859_73_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095054921_74_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095055031_75_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095055109_76_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095055187_77_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095055265_78_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095055343_79_S22297_I29247.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095055421_80_S22297_I29247.dcm
+│           └── ADNI_003_S_1059_MR_B1-calibration_Body__br_raw_20061110095055515_81_S22297_I29247.dcm
+├── B1-calibration_Head
+│   └── 2006-11-09_17_38_38.0
+│       └── I29248
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095045296_78_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095045390_79_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095045468_80_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095045546_81_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095045625_82_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095045937_83_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095046031_84_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095046125_85_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095046203_86_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095046281_87_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095046359_88_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095046421_89_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095046546_90_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095046625_91_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095046703_92_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095046796_93_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095046875_94_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095047171_95_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095047265_96_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095057937_1_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095058015_2_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095058093_3_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095058171_4_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095058250_5_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095058343_6_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095058406_7_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095058515_8_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095058593_9_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095058906_10_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095058984_11_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095059109_12_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095059203_13_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095059265_14_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095059343_15_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095059421_16_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095059515_17_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095059593_18_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095059671_19_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095059781_20_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095059859_21_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095059953_22_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095100250_23_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095100328_24_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095100406_25_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095100515_26_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095100593_27_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095100671_28_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095100734_29_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095100812_30_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095100906_31_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095100968_32_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095101046_33_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095101343_34_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095101421_35_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095101515_36_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095101593_37_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095101687_38_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095101796_39_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095101875_40_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095101953_41_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095102031_42_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095102109_43_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095102187_44_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095102265_45_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095102343_46_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095102640_47_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095102734_48_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095102812_49_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095102890_50_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095102953_51_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095103046_52_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095103109_53_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095103500_54_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095103593_55_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095103671_56_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095103781_57_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095103843_58_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095104234_59_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095104406_60_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095104500_61_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095104578_62_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095104687_63_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095104765_64_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095104843_65_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095104921_66_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095105000_67_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095105093_68_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095105187_69_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095105250_70_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095105546_71_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095105625_72_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095105703_73_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095105796_74_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095105859_75_S22298_I29248.dcm
+│           ├── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095105953_76_S22298_I29248.dcm
+│           └── ADNI_003_S_1059_MR_B1-calibration_Head__br_raw_20061110095106015_77_S22298_I29248.dcm
+├── MPRAGE
+│   └── 2006-11-09_17_28_06.0
+│       └── I29252
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095115953_98_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095116015_99_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095116109_100_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095116171_101_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095116250_102_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095116328_103_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095116406_104_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095116484_105_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095116562_106_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095116843_107_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095116921_108_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095117031_109_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095117109_110_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095117218_111_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095117296_112_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095117390_113_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095117468_114_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095117546_115_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095117625_116_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095117687_117_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095117781_118_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095117859_119_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095117937_120_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095118093_121_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095118390_122_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095118468_123_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095118546_124_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095118640_125_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095118718_126_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095118796_127_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095118890_128_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095118968_129_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095119062_130_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095119125_131_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095119234_132_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095119296_133_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095119390_134_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095119453_135_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095119750_136_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095119812_137_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095119906_138_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095120000_139_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095120078_140_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095120156_141_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095120234_142_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095120312_143_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095120390_144_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095120468_145_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095120546_146_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095120625_147_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095120703_148_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095120781_149_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095121093_150_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095121171_151_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095121250_152_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095121312_153_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095121406_154_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095121468_155_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095121546_156_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095121625_157_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095121718_158_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095121796_159_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095121875_160_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095126359_1_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095126515_2_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095126578_3_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095126656_4_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095126734_5_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095126812_6_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095126875_7_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095127234_8_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095127406_9_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095127531_10_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095127593_11_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095127687_12_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095127765_13_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095127843_14_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095127921_15_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095128000_16_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095128062_17_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095128140_18_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095128218_19_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095128312_20_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095128390_21_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095128468_22_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095128546_23_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095128859_24_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095128921_25_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095129015_26_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095129078_27_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095129171_28_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095129250_29_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095129343_30_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095129421_31_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095129500_32_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095129562_33_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095129640_34_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095129718_35_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095129796_36_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095129890_37_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095130187_38_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095130250_39_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095130343_40_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095130406_41_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095130484_42_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095130562_43_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095130640_44_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095130718_45_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095130812_46_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095130875_47_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095130953_48_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095131031_49_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095131125_50_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095131203_51_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095131296_52_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095131578_53_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095131687_54_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095131765_55_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095131843_56_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095131921_57_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095132000_58_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095132078_59_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095132156_60_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095132234_61_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095132343_62_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095132437_63_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095132515_64_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095132578_65_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095132671_66_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095132734_67_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095133031_68_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095133109_69_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095133187_70_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095133265_71_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095133343_72_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095133421_73_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095133500_74_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095133578_75_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095133656_76_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095133734_77_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095133812_78_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095133890_79_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095133984_80_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095134046_81_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095134125_82_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095134421_83_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095134500_84_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095134578_85_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095134687_86_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095134750_87_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095134843_88_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095134921_89_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095135000_90_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095135078_91_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095135156_92_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095135250_93_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095135328_94_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095135406_95_S22301_I29252.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095135484_96_S22301_I29252.dcm
+│           └── ADNI_003_S_1059_MR_MPRAGE_br_raw_20061110095135562_97_S22301_I29252.dcm
+├── MPRAGE_Repeat
+│   └── 2006-11-09_17_37_45.0
+│       └── I29251
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095055609_138_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095055703_139_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095055781_140_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095055859_141_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095055937_142_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095056234_143_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095056312_144_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095056390_145_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095056453_146_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095056546_147_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095056625_148_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095056750_149_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095056812_150_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095056906_151_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095057000_152_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095057078_153_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095057156_154_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095057234_155_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095057515_156_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095057609_157_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095057687_158_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095057781_159_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095057859_160_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095106093_38_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095106187_39_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095106281_40_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095106343_41_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095106437_42_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095106500_43_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095106812_44_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095106875_45_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095106984_46_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095107078_47_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095107156_48_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095107234_49_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095107312_50_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095107390_51_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095107468_52_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095107546_53_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095107640_54_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095107718_55_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095107796_56_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095107875_57_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095107953_58_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095108250_59_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095108328_60_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095108390_61_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095108468_62_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095108593_63_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095108671_64_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095108796_65_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095108875_66_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095109046_67_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095109140_68_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095109218_69_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095109296_70_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095109375_71_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095109671_72_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095109781_73_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095109890_74_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095109968_75_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095110046_76_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095110125_77_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095110203_78_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095110265_79_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095110359_80_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095110421_81_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095110500_82_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095110578_83_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095110656_84_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095110734_85_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095110828_86_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095110906_87_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095111203_88_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095111281_89_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095111375_90_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095111437_91_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095111531_92_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095111593_93_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095111687_94_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095111765_95_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095111843_96_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095111937_97_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095112031_98_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095112109_99_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095112187_100_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095112265_101_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095112343_102_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095112640_103_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095112734_104_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095112812_105_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095112890_106_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095112968_107_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095113078_108_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095113156_109_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095113234_110_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095113312_111_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095113390_112_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095113453_113_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095113546_114_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095113609_115_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095113703_116_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095113812_117_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095114093_118_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095114171_119_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095114281_120_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095114343_121_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095114437_122_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095114500_123_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095114593_124_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095114656_125_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095114750_126_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095114828_127_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095114906_128_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095114984_129_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095115062_130_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095115125_131_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095115453_132_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095115531_133_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095115609_134_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095115703_135_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095115781_136_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095115859_137_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095121953_1_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095122031_2_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095122109_3_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095122187_4_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095122468_5_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095122546_6_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095122625_7_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095122703_8_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095122781_9_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095122859_10_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095122937_11_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095123015_12_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095123093_13_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095123187_14_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095123250_15_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095123343_16_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095123406_17_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095123484_18_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095123593_19_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095123890_20_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095123968_21_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095124046_22_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095124125_23_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095124218_24_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095124546_25_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095124625_26_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095124703_27_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095124781_28_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095124859_29_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095124953_30_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095125046_31_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095125125_32_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095125203_33_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095125500_34_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095125562_35_S22300_I29251.dcm
+│           ├── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095125640_36_S22300_I29251.dcm
+│           └── ADNI_003_S_1059_MR_MPRAGE_Repeat__br_raw_20061110095125718_37_S22300_I29251.dcm
+└── PET_WB
+    └── 2007-01-10_11_15_31.0
+        └── I36366
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130059636_1_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130100151_2_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130100276_3_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130100370_4_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130100464_5_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130100558_6_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130100636_7_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130100730_8_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130100979_9_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130101073_10_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130101167_11_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130101245_12_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130101354_13_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130101433_14_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130101526_15_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130101620_16_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130101714_17_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130101792_18_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130101886_19_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130101979_20_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130102057_21_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130102151_22_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130102261_23_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130102354_24_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130102432_25_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130102526_26_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130102620_27_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130102698_28_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130102776_29_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130102870_30_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130102948_31_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130103026_32_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130103104_33_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130103198_34_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130103276_35_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130103370_36_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130103542_37_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130103635_38_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130103729_39_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130103901_40_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130103995_41_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130104073_42_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130104166_43_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130104245_44_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130104338_45_S25144_I36366.dcm
+            ├── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130104416_46_S25144_I36366.dcm
+            └── ADNI_003_S_1059_PT_PET_WB_br_raw_20070117130104510_47_S25144_I36366.dcm
+
+15 directories, 559 files

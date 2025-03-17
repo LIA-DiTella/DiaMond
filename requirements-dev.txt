@@ -14,3 +14,12 @@ sphinx-rtd-theme>=1.2.1
 pytest-xdist>=3.3.1
 pytest-benchmark>=4.0.0 
 tox>=4.6.0
+
+# Requisitos para desarrollo y pruebas
+mypy>=0.910
+pandas-stubs>=1.2.0
+types-requests>=2.27.0
+pytest>=7.0.0
+black>=22.1.0
+isort>=5.10.1
+flake8>=4.0.1
