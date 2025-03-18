@@ -57,14 +57,14 @@ class AdniDataset(Dataset):
         self.labels = []
         self.with_mri = with_mri
         self.with_pet = with_pet
-        
+
         # Definir transformaciones para las imágenes
         self.transforms = []
         if with_mri:
             self.transforms.append(get_image_transform(is_training))
         if with_pet:
             self.transforms.append(get_image_transform(is_training))
-            
+
         self._load()
 
     def _load(self):
@@ -75,39 +75,48 @@ class AdniDataset(Dataset):
 
         with h5py.File(self.path, mode="r") as file:
             for name, group in file.items():
+                print(f"Loading subject {name}")
+
                 if name == "stats":
                     continue
 
                 # Verificar que el grupo contiene las modalidades requeridas
                 has_mri = "MRI/T1/data" in group
                 has_pet = "PET/FDG/data" in group
-                
+
+                print(f"has_mri: {has_mri}, has_pet: {has_pet}")
+
                 # Saltar si faltan modalidades requeridas
                 if (self.with_mri and not has_mri) or (self.with_pet and not has_pet):
-                    LOG.warning(f"Sujeto {name} no tiene todas las modalidades requeridas, saltando")
+                    LOG.warning(
+                        f"Sujeto {name} no tiene todas las modalidades requeridas, saltando"
+                    )
                     continue
-                
+
                 # Verificar diagnóstico
                 if "DX" not in group.attrs:
                     LOG.warning(f"Sujeto {name} no tiene atributo DX, saltando")
                     continue
-                
+
                 dx = group.attrs["DX"]
                 # Saltamos sujetos MCI cuando usamos clasificación binaria
                 if self.out_class_num == 2 and dx == "MCI":
                     continue
-                
+
                 # Manejar casos para FTD que pueden no estar en mapeo estándar
                 if dx not in DIAGNOSIS_MAP and dx != "FTD":
-                    LOG.warning(f"Diagnóstico desconocido {dx} para sujeto {name}, saltando")
+                    LOG.warning(
+                        f"Diagnóstico desconocido {dx} para sujeto {name}, saltando"
+                    )
                     continue
 
                 # Cargar datos de imagen según modalidades requeridas
+                print(group)
                 if self.with_mri and self.with_pet:
                     mri_data = group["MRI/T1/data"][:]
                     pet_data = group["PET/FDG/data"][:]
                     pet_data = np.nan_to_num(pet_data, copy=False)
-                    
+
                     image_data.append((mri_data, pet_data))
                 elif self.with_mri:
                     mri_data = group["MRI/T1/data"][:]
@@ -116,6 +125,9 @@ class AdniDataset(Dataset):
                     pet_data = group["PET/FDG/data"][:]
                     pet_data = np.nan_to_num(pet_data, copy=False)
                     image_data.append(pet_data)
+                else:
+                    LOG.warning("No se han definido modalidades para cargar")
+                    raise ValueError("No se han definido modalidades para cargar")
 
                 diagnosis.append(dx)
                 rid.append(group.attrs.get("RID", name))  # Usar nombre como fallback
@@ -139,9 +151,13 @@ class AdniDataset(Dataset):
 
         # Mapeo de diagnósticos según número de clases
         if self.out_class_num == 3:
-            self._diagnosis = [DIAGNOSIS_MAP.get(d, 1) for d in diagnosis]  # 1 (MCI) para casos no mapeados
+            self._diagnosis = [
+                DIAGNOSIS_MAP.get(d, 1) for d in diagnosis
+            ]  # 1 (MCI) para casos no mapeados
         elif self.out_class_num == 2:
-            self._diagnosis = [DIAGNOSIS_MAP_binary.get(d, 0) for d in diagnosis]  # 0 (CN) para casos no mapeados
+            self._diagnosis = [
+                DIAGNOSIS_MAP_binary.get(d, 0) for d in diagnosis
+            ]  # 0 (CN) para casos no mapeados
 
         self._rid = rid
 
@@ -153,10 +169,12 @@ class AdniDataset(Dataset):
         scans = self._image_data[index]
 
         assert len(self.transforms) > 0, "No se han definido transformaciones"
-        
+
         if self.with_mri is True and self.with_pet is True:
-            assert len(scans) == len(self.transforms), f"Número de scans ({len(scans)}) no coincide con transformaciones ({len(self.transforms)})"
-            
+            assert len(scans) == len(self.transforms), (
+                f"Número de scans ({len(scans)}) no coincide con transformaciones ({len(self.transforms)})"
+            )
+
             sample = []
             for scan, transform in zip(scans, self.transforms):
                 # Asegurarse de que el tensor tiene la forma correcta para torchio (C, H, W, D)

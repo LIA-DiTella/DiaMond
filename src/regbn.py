@@ -44,26 +44,26 @@ class RegBN(nn.Module):
     metadata  effects from the features in a network  at the batch level.
 
     Args:
-        f_num_channels (int) – the number of channels in f data
-        g_num_channels (int) – the number of channels in g data
+        f_num_channels (int) - the number of channels in f data
+        g_num_channels (int) - the number of channels in g data
 
-        f_layer_dim (List[Sequence[int]]) – the spatial dimenstion of f
-        g_layer_dim (List[Sequence[int]]) – the spatial dimenstion of g
+        f_layer_dim (List[Sequence[int]]) - the spatial dimenstion of f
+        g_layer_dim (List[Sequence[int]]) - the spatial dimenstion of g
 
-        device (int) – the id of CUDA. Right now, only single gpu is supported
+        device (int) - the id of CUDA. Right now, only single gpu is supported
 
-        beta1 (float) – beta1 in eq (6)
-        beta2 (float) – beta2 in eq (6)
-        momentum (float) – momentum in eq (6)
+        beta1 (float) - beta1 in eq (6)
+        beta2 (float) - beta2 in eq (6)
+        momentum (float) - momentum in eq (6)
 
-        normalize_input (bool) – normalisation of input f
-        normalize_output (bool) –  normalisation of output f
+        normalize_input (bool) - normalisation of input f
+        normalize_output (bool) -  normalisation of output f
         affine (boo): batch normalisation`s affine
 
-        sigma_THR (float) – the threshold value for stds extracted by SVD (default: 0.)
-        sigma_MIN (float) – the minimum cutoff value of std (default: 0.0)
+        sigma_THR (float) - the threshold value for stds extracted by SVD (default: 0.)
+        sigma_MIN (float) - the minimum cutoff value of std (default: 0.0)
 
-        verbose (bool) – print some results
+        verbose (bool) - print some results
 
     Example:
         >>> batchSize = 100
@@ -112,6 +112,7 @@ class RegBN(nn.Module):
         sigma_THR: float = 0.0,
         sigma_MIN: float = 0.0,
         verbose: bool = False,
+        device: str = "cuda:0",
     ):
         super(RegBN, self).__init__()
 
@@ -127,7 +128,7 @@ class RegBN(nn.Module):
         self.sigma_THR = sigma_THR
         self.sigma_MIN = sigma_MIN
         self.verbose = verbose
-        self.device = f"cuda:{gpu}"
+        self.device = device
 
         g_dim_flat = reduce(operator.mul, [g_num_channels] + g_layer_dim, 1)
         f_dim_flat = reduce(operator.mul, [f_num_channels] + f_layer_dim, 1)
@@ -209,11 +210,11 @@ class RegBN(nn.Module):
     ) -> torch.Tensor:
         """
         Args:
-            f (Tensor) – a n-dimensional input learnable feature torch.Tensor
-            g (Tensor) – a m-dimensional metadata torch.Tensor
-            is_training (bool) – training or val/test
-            n_epoch (int) – the current epoch
-            steps_per_epoch (int) – number of steps per epoch
+            f (Tensor) - a n-dimensional input learnable feature torch.Tensor
+            g (Tensor) - a m-dimensional metadata torch.Tensor
+            is_training (bool) - training or val/test
+            n_epoch (int) - the current epoch
+            steps_per_epoch (int) - number of steps per epoch
         """
         f_sz, g_sz = f.size(), g.size()
 

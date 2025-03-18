@@ -50,36 +50,40 @@ class TestProcessData(unittest.TestCase):
         self.create_test_files()
 
         # Crear datos de ejemplo para MRI y PET
-        mri_data = np.random.rand(1, 10, 10, 10).astype(np.float32)  # Datos pequeños para test
-        pet_data = np.random.rand(1, 10, 10, 10).astype(np.float32)  # Datos pequeños para test
+        mri_data = np.random.rand(1, 10, 10, 10).astype(
+            np.float32
+        )  # Datos pequeños para test
+        pet_data = np.random.rand(1, 10, 10, 10).astype(
+            np.float32
+        )  # Datos pequeños para test
 
         # Inicialización de test_subjects para las pruebas
         self.test_subjects = [
             {
-                'id': 'subject1',
-                'rid': '001',  # Añadir RID (Research ID)
-                'path': os.path.join(self.test_dir, 'subject1.nii.gz'),
-                'label': 0,
-                'diagnosis': 'CN',  # Control Normal
-                'mri_data': mri_data,  # Añadir datos MRI
-                'pet_data': pet_data   # Añadir datos PET
+                "id": "subject1",
+                "rid": "001",  # Añadir RID (Research ID)
+                "path": os.path.join(self.test_dir, "subject1.nii.gz"),
+                "label": 0,
+                "diagnosis": "CN",  # Control Normal
+                "mri_data": mri_data,  # Añadir datos MRI
+                "pet_data": pet_data,  # Añadir datos PET
             },
             {
-                'id': 'subject2',
-                'rid': '002',  # Añadir RID (Research ID)
-                'path': os.path.join(self.test_dir, 'subject2.nii.gz'),
-                'label': 1,
-                'diagnosis': 'AD',  # Alzheimer's Disease
-                'mri_data': mri_data,  # Añadir datos MRI
-                'pet_data': pet_data   # Añadir datos PET
-            }
+                "id": "subject2",
+                "rid": "002",  # Añadir RID (Research ID)
+                "path": os.path.join(self.test_dir, "subject2.nii.gz"),
+                "label": 1,
+                "diagnosis": "AD",  # Alzheimer's Disease
+                "mri_data": mri_data,  # Añadir datos MRI
+                "pet_data": pet_data,  # Añadir datos PET
+            },
         ]
-        
+
         # Crear archivos dummy para las pruebas
         for subject in self.test_subjects:
             # Crear un archivo vacío o con datos mínimos
-            with open(subject['path'], 'wb') as f:
-                f.write(b'\x00' * 100)  # Escribir algunos bytes
+            with open(subject["path"], "wb") as f:
+                f.write(b"\x00" * 100)  # Escribir algunos bytes
 
     def tearDown(self):
         # Limpiar directorios temporales
@@ -192,7 +196,7 @@ class TestProcessData(unittest.TestCase):
     def test_create_h5_dataset_verbose_parameter(self):
         """Verificar que el parámetro verbose se maneja correctamente en create_h5_dataset"""
         output_path = os.path.join(self.test_dir, "test_verbose.h5")
-    
+
         with patch("logging.Logger.debug") as mock_debug:
             # Probar con verbose=True
             create_h5_dataset(output_path, self.test_subjects, verbose=True)

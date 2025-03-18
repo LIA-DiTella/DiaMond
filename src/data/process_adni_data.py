@@ -2,6 +2,7 @@
 Script para procesar datos ADNI:
 1. Organizar los datos convertidos
 2. Generar los archivos HDF5 para DiaMond
+3. Crear splits de entrenamiento/validación/prueba
 """
 
 import os
@@ -15,10 +16,16 @@ from pathlib import Path
 from tqdm import tqdm
 import json
 import h5py
+import numpy as np
+from sklearn.model_selection import train_test_split
+from typing import List, Dict
+import nibabel as nib
 
 # Importar funciones de los otros módulos
-from dicom_converter import batch_process_directories, set_global_log_level
-from process_data import create_h5_dataset, load_nifti_file, split_dataset
+from dicom_converter import set_global_log_level
+# from dicom_converter import batch_process_directories, set_global_log_level
+# from process_data import create_h5_dataset, load_nifti_file
+# split_dataset
 
 # Configurar logging
 logging.basicConfig(
@@ -31,6 +38,252 @@ logging.getLogger("dicom2nifti").setLevel(logging.ERROR)
 logging.getLogger("pydicom").setLevel(logging.ERROR)
 logging.getLogger("nibabel").setLevel(logging.ERROR)
 logging.getLogger("h5py").setLevel(logging.ERROR)
+
+
+def load_nifti_file(file_path: str) -> np.ndarray:
+    """
+    Carga un archivo NIFTI y devuelve sus datos como un array de NumPy.
+
+    Args:
+        file_path: Ruta al archivo NIFTI
+
+    Returns:
+        Array NumPy con los datos de la imagen
+    """
+    try:
+        img = nib.load(file_path)
+        data = img.get_fdata().astype(np.float32)
+
+        # Normalización básica a [0, 1]
+        if np.max(data) != np.min(data):
+            data = (data - np.min(data)) / (np.max(data) - np.min(data))
+
+        # Asegurarse de que los datos tienen la forma correcta para DiaMond (C, H, W, D)
+        data = data[np.newaxis, ...]  # Añadir canal si no existe
+
+        return data
+    except Exception as e:
+        logger.error(f"Error al cargar {file_path}: {e}")
+        return None
+
+
+def create_h5_dataset(
+    output_path: str,
+    subject_data: List[Dict],
+    modalities: List[str] = ["MRI", "PET"],
+    verbose: bool = False,
+) -> None:
+    """
+    Crea un archivo HDF5 con los datos de los sujetos.
+
+    Args:
+        output_path: Ruta donde se guardará el archivo HDF5
+        subject_data: Lista de diccionarios con datos de sujetos
+        modalities: Lista de modalidades a incluir
+        verbose: Si es True, muestra información adicional durante el proceso
+    """
+
+    if verbose:
+        print("Creating HDF5 file")
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    with h5py.File(output_path, "w") as h5f:
+        if verbose:
+            logger.debug(f"Creando archivo HDF5 en {output_path}")
+
+        # Crear grupo de estadísticas
+        print("Creating stats group")
+        stats_group = h5f.create_group("stats")
+        stats_group.attrs["num_subjects"] = len(subject_data)
+
+        print("Counting diagnoses")
+        # Contar diagnósticos
+        all_dx = [s["diagnosis"] for s in subject_data]
+        dx_counts = {dx: all_dx.count(dx) for dx in set(all_dx)}
+        for dx, count in dx_counts.items():
+            stats_group.attrs[f"count_{dx}"] = count
+
+        print("Adding subjects")
+        # Añadir cada sujeto
+        subject_iterator = tqdm(subject_data, desc=f"Creando {output_path}")
+        for i, subject in enumerate(subject_iterator):
+            # Usar el RID si está disponible, de lo contrario usar índice
+            subject_id = subject.get("rid", f"subject_{i}")
+
+            if not subject_id:
+                print("No subject ID found")
+                continue
+
+            # Verificar que los datos MRI y PET son arrays de numpy válidos
+            has_mri = "mri_data" in subject and isinstance(
+                subject["mri_data"], np.ndarray
+            )
+            has_pet = "pet_data" in subject and isinstance(
+                subject["pet_data"], np.ndarray
+            )
+
+            if not (has_mri or has_pet):
+                print(f"Skipping subject {i}: {subject_id} - no valid image data")
+                continue
+
+            subject_iterator.set_postfix_str(f"Subject {subject_id}")
+
+            # Limpiar el id para asegurar que sea un nombre de grupo válido en HDF5
+            subject_id = re.sub(r"[^\w]", "_", str(subject_id))
+
+            print(f"Creating group for subject {subject_id}")
+            subject_group = h5f.create_group(subject_id)
+            subject_group.attrs["RID"] = subject["rid"]
+            subject_group.attrs["DX"] = subject["diagnosis"]
+
+            # Añadir datos de MRI si están disponibles
+            if "MRI" in modalities and has_mri:
+                mri_group = subject_group.create_group("MRI/T1")
+                mri_group.create_dataset(
+                    "data", data=subject["mri_data"], dtype=np.float32
+                )
+                if verbose:
+                    logger.debug(f"Añadidos datos MRI para sujeto {subject_id}")
+
+            # Añadir datos de PET si están disponibles
+            if "PET" in modalities and has_pet:
+                pet_group = subject_group.create_group("PET/FDG")
+                pet_group.create_dataset(
+                    "data", data=subject["pet_data"], dtype=np.float32
+                )
+                if verbose:
+                    logger.debug(f"Añadidos datos PET para sujeto {subject_id}")
+
+    logger.info(f"Archivo HDF5 creado: {output_path}")
+    logger.info(f"Total de sujetos: {len(subject_data)}")
+    logger.info(f"Distribución de diagnósticos: {dx_counts}")
+
+    if verbose:
+        logger.debug("Detalles completos de la creación del archivo:")
+        for dx, count in dx_counts.items():
+            logger.debug(f"  - {dx}: {count} sujetos")
+
+
+def split_dataset(
+    input_path: str,
+    output_dir: str,
+    n_splits: int = 5,
+    test_size: float = 0.2,
+    valid_size: float = 0.15,
+    random_seed: int = 42,
+    verbose: bool = True,
+) -> None:
+    """
+    Divide un archivo HDF5 en múltiples conjuntos de entrenamiento/validación/prueba.
+
+    Args:
+        input_path: Ruta al archivo HDF5 maestro
+        output_dir: Directorio donde se guardarán los archivos HDF5 divididos
+        n_splits: Número de divisiones para validación cruzada
+        test_size: Fracción de datos para prueba
+        valid_size: Fracción de datos de entrenamiento para validación
+        random_seed: Semilla para reproducibilidad
+        verbose: Si es True, muestra información adicional durante el proceso
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    log_level = logging.INFO if verbose else logging.WARNING
+    logger.setLevel(log_level)
+
+    try:
+        with h5py.File(input_path, "r") as h5f:
+            # Obtener IDs de sujetos (excluyendo 'stats' si existe)
+            subject_ids = [k for k in h5f.keys() if k != "stats"]
+
+            if verbose:
+                logger.info(
+                    f"Dividiendo dataset con {len(subject_ids)} sujetos en {n_splits} splits"
+                )
+
+            # Extraer diagnósticos para estratificación
+            diagnoses = [h5f[sid].attrs.get("DX", "Unknown") for sid in subject_ids]
+
+            # Convertir a DataFrame para facilitar la división
+            df = pd.DataFrame({"subject_id": subject_ids, "diagnosis": diagnoses})
+
+            # Primero separar el conjunto de prueba global
+            train_val_df, test_df = train_test_split(
+                df,
+                test_size=test_size,
+                random_state=random_seed,
+                stratify=df["diagnosis"] if len(set(df["diagnosis"])) > 1 else None,
+            )
+
+            # Crear conjuntos para cada split de validación cruzada
+            for split in range(n_splits):
+                split_seed = random_seed + split
+
+                # Para cada split, crear train/val/test
+                if len(set(train_val_df["diagnosis"])) > 1:
+                    train_df, val_df = train_test_split(
+                        train_val_df,
+                        test_size=valid_size,
+                        random_state=split_seed,
+                        stratify=train_val_df["diagnosis"],
+                    )
+                else:
+                    train_df, val_df = train_test_split(
+                        train_val_df, test_size=valid_size, random_state=split_seed
+                    )
+
+                print("Train DF")
+                print(train_df)
+
+                print("Val DF")
+                print(val_df)
+
+                print("Test DF")
+                print(test_df)
+
+                # Crear archivos HDF5 para cada conjunto
+                split_files = [
+                    (train_df, f"{split}-train.h5", "entrenamiento"),
+                    (val_df, f"{split}-valid.h5", "validación"),
+                    (test_df, f"{split}-test.h5", "prueba"),
+                ]
+
+                for subset_df, filename, subset_name in split_files:
+                    output_path = os.path.join(output_dir, filename)
+
+                    with h5py.File(output_path, "w") as out_f:
+                        # Copiar estadísticas si existen
+                        if "stats" in h5f:
+                            h5f.copy("stats", out_f)
+
+                            # Actualizar estadísticas para este subset
+                            if "stats" in out_f:
+                                out_f["stats"].attrs["num_subjects"] = len(subset_df)
+
+                                # Actualizar conteo de diagnósticos
+                                dx_counts = (
+                                    subset_df["diagnosis"].value_counts().to_dict()
+                                )
+                                for dx, count in dx_counts.items():
+                                    out_f["stats"].attrs[f"count_{dx}"] = count
+
+                        # Copiar sujetos
+                        for _, row in subset_df.iterrows():
+                            subject_id = row["subject_id"]
+                            h5f.copy(h5f[subject_id], out_f, name=subject_id)
+
+                    if verbose:
+                        logger.info(
+                            f"Split {split}, conjunto de {subset_name}: {len(subset_df)} sujetos guardados en {output_path}"
+                        )
+
+        if verbose:
+            logger.info(
+                f"División de dataset completada. Archivos guardados en {output_dir}"
+            )
+
+    except Exception as e:
+        logger.error(f"Error al dividir el dataset: {e}")
+        raise
 
 
 def find_adni_subjects(base_dir):
@@ -61,25 +314,125 @@ def find_adni_subjects(base_dir):
     return subject_dirs
 
 
-def extract_subject_metadata(dicom_dir, nifti_dir):
+def extract_subject_metadata(dicom_dir, output_dir):
     """
     Extrae metadatos de los sujetos basados en archivos DICOM y NIFTI
 
     Args:
         dicom_dir (str): Directorio con datos DICOM
-        nifti_dir (str): Directorio con archivos NIFTI convertidos
+        output_dir (str): Directorio con datos procesados
     Returns:
         pd.DataFrame: DataFrame con metadatos de sujetos
     """
     metadata = []
-    nifti_path = Path(nifti_dir)
+    output_path = Path(output_dir)
 
-    # Buscar archivos JSON de información creados durante la conversión
-    info_files = list(nifti_path.glob("**/mri_scan_info.json")) + list(
-        nifti_path.glob("**/pet_scan_info.json")
+    # Buscar directorios de sujetos
+    subject_dirs = [
+        d for d in output_path.glob("*") if d.is_dir() and not d.name.startswith(".")
+    ]
+    logger.info(
+        f"Encontrados {len(subject_dirs)} directorios de sujetos en {output_path}"
     )
 
-    # También buscar en la carpeta de metadatos si existe
+    for subject_dir in subject_dirs:
+        subject_id = subject_dir.name
+        subject_entry = {
+            "subject_id": subject_id,
+            "diagnosis": "Unknown",  # Se completará más tarde
+        }
+
+        """
+        (diamond) nacho@Chonas-M1-MacBook-Pro-266 DiaMond % tree data/processed/109_S_0967
+        data/processed/109_S_0967
+        ├── mri_scan_info.json
+        ├── nifti
+        │   ├── mri
+        │   │   └── 109_S_0967_MRI.nii.gz
+        │   └── pet
+        │       └── 109_S_0967_PET.nii.gz
+        └── pet_scan_info.json
+
+        3 directories, 4 files
+        """
+
+        subject_entry["mri_path"] = None
+        subject_entry["pet_path"] = None
+
+        if os.path.exists(output_path / subject_id / "mri_scan_info.json"):
+            with open(output_path / subject_id / "mri_scan_info.json") as f:
+                mri_info = json.load(f)
+                subject_entry["mri_info"] = mri_info["nifti_output"]
+
+        if os.path.exists(output_path / subject_id / "pet_scan_info.json"):
+            with open(output_path / subject_id / "pet_scan_info.json") as f:
+                pet_info = json.load(f)
+                subject_entry["pet_info"] = pet_info["nifti_output"]
+
+        # Buscar archivos NIFTI dentro del directorio de sujeto
+        mri_files = list(subject_dir.glob("**/nifti/mri/*.nii.gz"))
+        pet_files = list(subject_dir.glob("**/nifti/pet/*.nii.gz"))
+
+        # Si no encontramos en la estructura esperada, intentamos una búsqueda más general
+        if not mri_files:
+            mri_files = list(subject_dir.glob("**/*MRI*.nii.gz"))
+        if not pet_files:
+            pet_files = list(subject_dir.glob("**/*PET*.nii.gz"))
+
+        # Buscar también en el directorio nifti general
+        if not mri_files:
+            mri_files = list(output_path.glob(f"nifti/mri/*{subject_id}*.nii.gz"))
+        if not pet_files:
+            pet_files = list(output_path.glob(f"nifti/pet/*{subject_id}*.nii.gz"))
+
+        # Agregar rutas a los archivos encontrados
+        if mri_files:
+            # Guardar ruta relativa al directorio output_dir
+            mri_path = os.path.relpath(str(mri_files[0]), output_dir)
+            subject_entry["mri_path"] = mri_path
+            logger.debug(f"Encontrado MRI para {subject_id}: {mri_path}")
+
+        if pet_files:
+            # Guardar ruta relativa al directorio output_dir
+            pet_path = os.path.relpath(str(pet_files[0]), output_dir)
+            subject_entry["pet_path"] = pet_path
+            logger.debug(f"Encontrado PET para {subject_id}: {pet_path}")
+
+        # Buscar archivos JSON de info
+        mri_info = list(subject_dir.glob("mri_scan_info.json"))
+        pet_info = list(subject_dir.glob("pet_scan_info.json"))
+
+        # Procesar información de los JSON si existen
+        for info_file in mri_info + pet_info:
+            modality = "mri" if "mri" in info_file.name.lower() else "pet"
+            try:
+                with open(info_file) as f:
+                    info = json.load(f)
+
+                # Extraer información adicional si está disponible
+                if "scan_date" in info:
+                    subject_entry[f"{modality}_scan_date"] = info["scan_date"]
+                if "scanner" in info:
+                    subject_entry[f"{modality}_scanner"] = info["scanner"]
+
+                # Si el archivo NIFTI no se encontró antes, intentar usar el del JSON
+                if f"{modality}_path" not in subject_entry and "nifti_output" in info:
+                    nifti_file = info.get("nifti_output", "")
+                    if nifti_file and os.path.exists(nifti_file):
+                        rel_path = os.path.relpath(nifti_file, output_dir)
+                        subject_entry[f"{modality}_path"] = rel_path
+            except Exception as e:
+                logger.warning(f"Error al procesar {info_file}: {e}")
+
+        # Solo agregar al metadata si tiene al menos una modalidad
+        if "mri_path" in subject_entry or "pet_path" in subject_entry:
+            metadata.append(subject_entry)
+        else:
+            logger.warning(
+                f"No se encontraron archivos NIFTI para el sujeto {subject_id}"
+            )
+
+    # También buscar en la carpeta de metadatos ADNI si existe
     adni_metadata_dir = Path(dicom_dir).parent / "ADNI Metadata"
     if adni_metadata_dir.exists():
         logger.info(f"Buscando metadatos adicionales en {adni_metadata_dir}")
@@ -94,66 +447,76 @@ def extract_subject_metadata(dicom_dir, nifti_dir):
             # Buscar archivos XML de metadatos
             xml_files = list(subject_dir.glob("**/*.xml"))
             if xml_files:
-                # Aquí se podrían extraer datos de los XML si es necesario
-                # Por ahora solo añadimos el ID de sujeto
-                entry = {
-                    "subject_id": subject_id,
-                    "diagnosis": "Unknown",  # Se completará más tarde
-                    "has_metadata": True,
-                }
-                metadata.append(entry)
-
-    # Procesar archivos de información de conversión
-    for info_file in info_files:
-        subject_id = info_file.parent.name
-        modality = "mri" if "mri" in info_file.name else "pet"
-
-        try:
-            with open(info_file) as f:
-                info = json.load(f)
-
-            # Buscar archivo NIFTI relacionado
-            nifti_file = info.get("nifti_output", "")
-            if nifti_file and os.path.exists(nifti_file):
-                # Crear o actualizar entrada existente
+                # Verificar si el sujeto ya está en metadata
                 existing_entry = next(
                     (item for item in metadata if item["subject_id"] == subject_id),
                     None,
                 )
 
                 if existing_entry:
-                    existing_entry[f"{modality}_path"] = nifti_file
+                    # Actualizar la entrada existente
+                    existing_entry["has_metadata"] = True
                 else:
+                    # Crear una nueva entrada
                     entry = {
                         "subject_id": subject_id,
                         "diagnosis": "Unknown",  # Se completará más tarde
-                        f"{modality}_path": nifti_file,
+                        "has_metadata": True,
                     }
                     metadata.append(entry)
-        except Exception as e:
-            logger.warning(f"Error al procesar {info_file}: {e}")
 
     # Convertir a DataFrame y combinar entradas con el mismo subject_id
     df = pd.DataFrame(metadata)
-    if not df.empty:
-        df = df.groupby("subject_id").first().reset_index()
+
+    # Verificar si el DataFrame está vacío
+    if df.empty:
+        logger.warning(
+            "No se encontraron sujetos. El DataFrame de metadatos está vacío."
+        )
+        # Crear un DataFrame vacío con las columnas necesarias
+        df = pd.DataFrame(columns=["subject_id", "diagnosis", "mri_path", "pet_path"])
+        return df
+
+    # Verificar si hay sujetos sin modalidades
+    if "mri_path" in df.columns and "pet_path" in df.columns:
+        missing_modalities = df[(~df.mri_path.notna()) & (~df.pet_path.notna())]
+        if not missing_modalities.empty:
+            logger.warning(
+                f"{len(missing_modalities)} sujetos sin modalidades MRI ni PET"
+            )
+            logger.warning(f"Ejemplos: {missing_modalities.subject_id.tolist()[:5]}")
+
+        # Asegurar que no haya duplicados de subject_id
+        df = df.drop_duplicates(subset=["subject_id"], keep="first")
+
+        # Imprimir estadísticas
+        with_mri = df.mri_path.notna().sum()
+        with_pet = df.pet_path.notna().sum()
+        with_both = df[df.mri_path.notna() & df.pet_path.notna()].shape[0]
+
+        logger.info(f"Total sujetos: {len(df)}")
+        logger.info(f"Con MRI: {with_mri}, Con PET: {with_pet}, Con ambos: {with_both}")
+    else:
+        logger.warning("No se encontraron columnas de modalidades en el DataFrame")
+        # Asegurar que existan las columnas necesarias
+        for col in ["mri_path", "pet_path"]:
+            if col not in df.columns:
+                df[col] = None
 
     return df
 
 
-def merge_with_clinical_data(metadata, clinical_csv):
+def merge_with_clinical_data(metadata, clinical):
     """
     Combina metadatos extraídos con datos clínicos
 
     Args:
         metadata (pd.DataFrame): DataFrame con metadatos extraídos
-        clinical_csv (str): Ruta al archivo CSV con datos clínicos
+        clinical (pd.DataFrame): DataFrame con datos clínicos
     Returns:
         pd.DataFrame: DataFrame combinado
     """
     try:
-        clinical = pd.read_csv(clinical_csv)
-
         # Asegurarse de que ambos tienen la columna subject_id
         if "subject_id" not in clinical.columns:
             # Para ADNI, buscar columnas como PTID, RID, etc.
@@ -317,17 +680,18 @@ def process_adni_workflow(dicom_dir, output_dir, clinical_csv=None, verbose=Fals
 
     clinical_csv_df = pd.read_csv(clinical_csv)
 
-    print(clinical_csv_df)
+    # print(clinical_csv_df)
 
     # Establecer nivel de log global
     set_global_log_level(verbose)
 
     # 1. Crear directorios de salida
     output_path = Path(output_dir)
-    nifti_dir = output_path / "nifti"
+    # output_dir = output_path / "nifti"
     hdf5_dir = output_path / "hdf5"
 
-    os.makedirs(nifti_dir, exist_ok=True)
+    print(output_path)
+    # os.makedirs(output_dir, exist_ok=True)
     os.makedirs(hdf5_dir, exist_ok=True)
 
     # 2. Encontrar sujetos ADNI
@@ -337,116 +701,178 @@ def process_adni_workflow(dicom_dir, output_dir, clinical_csv=None, verbose=Fals
     # if verbose:
     # logger.info("Convirtiendo archivos DICOM a NIFTI...")
     # batch_process_directories(
-    #     subject_dirs, str(nifti_dir), modalities=["mri", "pet"], verbose=verbose
+    #     subject_dirs, str(output_dir), modalities=["mri", "pet"], verbose=verbose
     # )
 
     # If not metadata.csv
-    if not os.path.exists(output_path / "metadata.csv"):
-        # 4. Extraer metadatos
+    # 4. Extraer metadatos
+    if verbose:
+        logger.info("Extrayendo metadatos...")
+
+    # Verificar que el directorio nifti existe y contiene datos
+    # output_dir = output_path / "nifti"
+    # if not os.path.exists(output_dir) or not any(output_dir.glob("*")):
+    #     logger.warning(f"El directorio NIFTI {output_dir} no existe o está vacío.")
+    #     print(f"AVISO: El directorio {output_dir} no existe o está vacío.")
+    #     print("Creando un directorio vacío para continuar...")
+    #     os.makedirs(output_dir, exist_ok=True)
+
+    metadata = extract_subject_metadata(dicom_dir, output_dir)
+
+    if metadata.empty:
+        logger.warning("No se encontraron sujetos en los datos procesados.")
+        print("AVISO: No se pudieron encontrar sujetos en los datos procesados.")
+        # Crear un DataFrame mínimo para poder continuar
+        test_subjects = [
+            {"subject_id": "TEST_SUBJECT_1", "diagnosis": "CN"},
+            {"subject_id": "TEST_SUBJECT_2", "diagnosis": "AD"},
+            {"subject_id": "TEST_SUBJECT_3", "diagnosis": "MCI"},
+        ]
+        metadata = pd.DataFrame(test_subjects)
+
+    # 5. Combinar con datos clínicos si están disponibles
+    if not clinical_csv_df.empty:
         if verbose:
-            logger.info("Extrayendo metadatos...")
-        metadata = extract_subject_metadata(dicom_dir, nifti_dir)
+            logger.info(
+                f"Combinando con datos clínicos desde archivo CSV: {clinical_csv}"
+            )
+        metadata = merge_with_clinical_data(metadata, clinical_csv_df)
+    else:
+        # Intentar crear datos clínicos a partir de archivos XML
+        if verbose:
+            logger.info(
+                "Archivo de datos clínicos no proporcionado, intentando crear desde XML..."
+            )
+        adni_metadata_dir = Path(dicom_dir).parent / "ADNI Metadata"
 
-        # 5. Combinar con datos clínicos si están disponibles
-        if clinical_csv and os.path.exists(clinical_csv):
-            if verbose:
-                logger.info(
-                    f"Combinando con datos clínicos desde archivo CSV: {clinical_csv}"
-                )
-            metadata = merge_with_clinical_data(metadata, clinical_csv)
-        else:
-            # Intentar crear datos clínicos a partir de archivos XML
-            if verbose:
-                logger.info(
-                    "Archivo de datos clínicos no proporcionado, intentando crear desde XML..."
-                )
-            adni_metadata_dir = Path(dicom_dir).parent / "ADNI Metadata"
-
-            if adni_metadata_dir.exists():
-                clinical_data = create_clinical_data_from_metadata(adni_metadata_dir)
-                if not clinical_data.empty:
-                    # Guardar el CSV generado automáticamente
-                    auto_clinical_csv = Path(output_dir) / "auto_clinical_data.csv"
-                    clinical_data.to_csv(auto_clinical_csv, index=False)
-                    if verbose:
-                        logger.info(
-                            f"Datos clínicos generados automáticamente guardados en: {auto_clinical_csv}"
-                        )
-
-                    # Combinar con metadatos
-                    metadata = pd.merge(
-                        metadata, clinical_data, on="subject_id", how="left"
+        if adni_metadata_dir.exists():
+            clinical_data = create_clinical_data_from_metadata(adni_metadata_dir)
+            if not clinical_data.empty:
+                # Guardar el CSV generado automáticamente
+                auto_clinical_csv = Path(output_dir) / "auto_clinical_data.csv"
+                clinical_data.to_csv(auto_clinical_csv, index=False)
+                if verbose:
+                    logger.info(
+                        f"Datos clínicos generados automáticamente guardados en: {auto_clinical_csv}"
                     )
 
-                    # Asegurar que la columna diagnóstico se llame 'diagnosis'
-                    if "diagnosis_y" in metadata.columns:
-                        metadata["diagnosis"] = metadata["diagnosis_y"]
-                        metadata = metadata.drop(columns=["diagnosis_x", "diagnosis_y"])
+                # Combinar con metadatos
+                metadata = pd.merge(
+                    metadata, clinical_data, on="subject_id", how="left"
+                )
 
-        # 6. Guardar metadatos - Asegurar que se guarden en el directorio raíz de salida
-        metadata_path = output_path / "metadata.csv"
-        os.makedirs(output_path, exist_ok=True)  # Asegurar que el directorio existe
-        metadata.to_csv(metadata_path, index=False)
+                # Asegurar que la columna diagnóstico se llame 'diagnosis'
+                if "diagnosis_y" in metadata.columns:
+                    metadata["diagnosis"] = metadata["diagnosis_y"]
+                    metadata = metadata.drop(columns=["diagnosis_x", "diagnosis_y"])
 
-        if verbose:
-            logger.info(f"Metadatos guardados en {metadata_path}")
-        else:
-            print(
-                f"Metadatos guardados en {metadata_path}"
-            )  # Mensaje esencial incluso en modo silencioso
+    # 6. Guardar metadatos - Asegurar que se guarden en el directorio raíz de salida
+    metadata_path = output_path / "metadata.csv"
+    os.makedirs(output_path, exist_ok=True)  # Asegurar que el directorio existe
+    metadata.to_csv(metadata_path, index=False)
 
+    if verbose:
+        logger.info(f"Metadatos guardados en {metadata_path}")
     else:
-        # Si ya existe un archivo de metadatos, cargarlo
-        metadata_path = output_path / "metadata.csv"
-        metadata = pd.read_csv(metadata_path)
+        print(
+            f"Metadatos guardados en {metadata_path}"
+        )  # Mensaje esencial incluso en modo silencioso
 
     # get diagnosis for metadata["diagnosis"] from clinical_csv_df["Group"] where metadata["subject_id"] == clinical_csv_df["Subject"]
 
     metadata["diagnosis"] = metadata["subject_id"].map(
-        lambda x: clinical_csv_df.loc[clinical_csv_df["Subject"] == x, "Group"].values[0]
+        lambda x: clinical_csv_df.loc[clinical_csv_df["Subject"] == x, "Group"].values[
+            0
+        ]
         if x in clinical_csv_df["Subject"].values
         else "Unknown"
     )
 
     metadata.to_csv(metadata_path, index=False)
 
+    print(f"Subjects: {len(metadata)}")
+    print(metadata["diagnosis"].value_counts())
+
     # 7. Preparar datos para el dataset HDF5
     if verbose:
         logger.info("Preparando datasets...")
+        logger.info(f"Estructura del DataFrame de metadatos: {metadata.columns}")
+        logger.info(f"Primeras filas: {metadata.head()}")
 
     # Cargar imágenes y preparar datos para HDF5
     subject_data = []
-    progress_bar = tqdm(
+
+    # Procesamiento normal de imágenes existentes
+    for _, row in tqdm(
         metadata.iterrows(),
         total=len(metadata),
         desc="Cargando datos de imagen",
-        disable=not verbose,
-    )
-    for _, row in progress_bar:
+    ):
         subject_dict = {
             "rid": row["subject_id"],
-            "diagnosis": row.get("Group", "Unknown"),
+            "diagnosis": row.get("diagnosis", "Unknown"),
+            "mri_data": None,
+            "pet_data": None,
+            "mri_path": None,
+            "pet_path": None,
         }
 
-        # Cargar MRI
+        """
+        (diamond) nacho@Chonas-M1-MacBook-Pro-266 DiaMond % tree data/processed/109_S_0967
+        data/processed/109_S_0967
+        ├── mri_scan_info.json
+        ├── nifti
+        │   ├── mri
+        │   │   └── 109_S_0967_MRI.nii.gz
+        │   └── pet
+        │       └── 109_S_0967_PET.nii.gz
+        └── pet_scan_info.json
+
+        3 directories, 4 files
+        """
+
+        if os.path.exists(output_path / row["subject_id"] / "mri_scan_info.json"):
+            with open(output_path / row["subject_id"] / "mri_scan_info.json") as f:
+                mri_info = json.load(f)
+                subject_dict["mri_info"] = mri_info["nifti_output"]
+
+        if os.path.exists(output_path / row["subject_id"] / "pet_scan_info.json"):
+            with open(output_path / row["subject_id"] / "pet_scan_info.json") as f:
+                pet_info = json.load(f)
+                subject_dict["pet_info"] = pet_info["nifti_output"]
+
+        # Cargar MRI - Asegurar que existe la columna y la ruta
         if "mri_path" in row and pd.notna(row["mri_path"]):
-            mri_path = row["mri_path"]
+            mri_path = os.path.join(output_dir, row["mri_path"])
             if os.path.exists(mri_path):
                 mri_data = load_nifti_file(mri_path)
                 if mri_data is not None:
                     subject_dict["mri_data"] = mri_data
+                else:
+                    print(f"Error al cargar MRI desde {mri_path}")
 
-        # Cargar PET
+        # Cargar PET - Asegurar que existe la columna y la ruta
         if "pet_path" in row and pd.notna(row["pet_path"]):
-            pet_path = row["pet_path"]
+            pet_path = os.path.join(output_dir, row["pet_path"])
             if os.path.exists(pet_path):
                 pet_data = load_nifti_file(pet_path)
                 if pet_data is not None:
                     subject_dict["pet_data"] = pet_data
+                else:
+                    print(f"Error al cargar PET desde {pet_path}")
 
-        # Solo incluir si tiene al menos una modalidad
-        if "mri_data" in subject_dict or "pet_data" in subject_dict:
+        # Añadir a la lista de datos de sujetos
+        if subject_dict and "mri_data" in subject_dict and "mri_data" in subject_dict:
+            subject_dict["mri_path"] = subject_dict["mri_data"]
+            subject_dict["pet_path"] = subject_dict["pet_data"]
+
             subject_data.append(subject_dict)
+        else:
+            logger.warning(f"Datos incompletos para {row['subject_id']}")
+            if row["subject_id"] == "109_S_0967":
+                print(subject_dict)
+
+    print(f"Subjects with valid image data: {len(subject_data)} / {len(metadata)}")
 
     # 8. Crear archivo HDF5 maestro
     if subject_data:
@@ -466,7 +892,7 @@ def process_adni_workflow(dicom_dir, output_dir, clinical_csv=None, verbose=Fals
 
         # Dividir dataset en train/valid/test para cada split
         # Utilizamos la función split_dataset de process_data.py
-        """ try:
+        try:
             split_dataset(
                 input_path=str(hdf5_path),
                 output_dir=str(hdf5_dir),
@@ -540,7 +966,6 @@ def process_adni_workflow(dicom_dir, output_dir, clinical_csv=None, verbose=Fals
                             logger.info(
                                 f"Creado archivo {out_path} con {len(subset_indices)} sujetos"
                             )
-         """
     else:
         if verbose:
             logger.warning(

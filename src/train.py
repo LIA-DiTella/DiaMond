@@ -26,15 +26,16 @@ from optimizer import LARS, CosineWarmupScheduler
 from regbn import RegBN
 import warnings
 
+cuda_id = 0
+# device = torch.device(f"cuda:{cuda_id}" if torch.cuda.is_available() else ("mps" if (torch.backends.mps.is_available() and torch.backends.mps.is_built()) else "cpu"))
+device = "cpu"
+
 
 def warn(*args, **kwargs):
     pass
 
 
 warnings.warn = warn
-
-print(f"Torch: {torch.__version__}")
-print(f"Cuda Available: {torch.cuda.is_available()}")
 
 ##################################################################################
 # Command line arguments
@@ -437,10 +438,12 @@ def test(
 
 ############################################################################################
 
-if __name__ == "__main__":
+
+def main():
+    print(f"Torch: {torch.__version__}")
+    print(f"Device: {device} - Cuda Available: {torch.cuda.is_available()}")
+
     args = parse_args()
-    cuda_id = 0
-    device = torch.device(f"cuda:{cuda_id}" if torch.cuda.is_available() else "cpu")
 
     # Determine the config file path
     if args.config:
@@ -520,6 +523,7 @@ if __name__ == "__main__":
         "affine": True,
         "sigma_THR": 0.0,
         "sigma_MIN": 0.0,
+        "device": device,
     }
 
     # Create model directories if needed
@@ -529,7 +533,7 @@ if __name__ == "__main__":
         os.makedirs(experiment_dir, exist_ok=True)
 
     for split in range(0, 5):
-        run = wandb.init(
+        wandb.init(
             project=args.wandb_project,
             entity=args.wandb_entity,
             notes=experiment_name,
@@ -546,6 +550,7 @@ if __name__ == "__main__":
             # Añadamos un log para depurar las rutas
             split_train_path = f"{dataset_path}/{split}-train.h5"
             print(f"Loading training data from: {split_train_path}")
+
             train_data = AdniDataset(
                 path=split_train_path,
                 is_training=True,
@@ -592,7 +597,7 @@ if __name__ == "__main__":
                 dataset=test_data, batch_size=wandb.config.batch_size, shuffle=True
             )
 
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         wandb.config.update({"device": device}, allow_val_change=True)
 
         head = None
@@ -841,7 +846,7 @@ if __name__ == "__main__":
             ]
             [m.to(device) for m in model]
             if head is not None:
-                msg_head = head.load_state_dict(checkpoint["head_state_dict"])
+                head.load_state_dict(checkpoint["head_state_dict"])
                 head.to(device)
 
             epoch = checkpoint["epoch"]
@@ -920,3 +925,7 @@ if __name__ == "__main__":
                 f"test_precision: {np.mean(test_precision):.6f} +- {np.std(test_precision):.6f}, "
                 f"test_recall: {np.mean(test_recall)::.6f} +- {np.std(test_recall):.6f}\n\n"
             )
+
+
+if __name__ == "__main__":
+    main()

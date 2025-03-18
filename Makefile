@@ -27,7 +27,7 @@ N_SPLITS ?= 5
 VERBOSE ?= 0
 
 # Variables para entrenamiento
-DATASET_PATH ?= $(shell pwd)/data/processed/hdf5/adni_dataset.h5
+DATASET_PATH ?= $(shell pwd)/data/processed/hdf5
 CONFIG ?= $(shell pwd)/config/config.yaml
 MODEL_DIR ?= $(shell pwd)/models
 IMG_SIZE ?= 128
@@ -89,45 +89,50 @@ data-hdf5:
 		--dicom-dir $(DATA_DICOM) \
 		--output-dir $(DATA_OUTPUT) \
 		--clinical-csv $(CLINICAL_DATA) \
-		# --quiet; \
-
-# Nueva regla separada para crear divisiones del dataset
-data-split:
-	@echo "Creando divisiones de conjunto de datos..."
-	@if [ -f "$(DATA_OUTPUT)/metadata.csv" ]; then \
-		python src/data/process_data.py \
-			--metadata $(DATA_OUTPUT)/metadata.csv \
-			--data-dir $(DATA_OUTPUT)/nifti \
-			--output-dir $(DATA_OUTPUT)/hdf5 \
-			--n-splits $(N_SPLITS) \
-			$(if $(VERBOSE),--quiet); \
-	else \
-		echo "ERROR: Archivo de metadatos no encontrado en $(DATA_OUTPUT)/metadata.csv"; \
-		echo "El proceso anterior puede haber fallado."; \
-		exit 1; \
-	fi
-
-# Regla para dividir con parámetros específicos
-data-split-custom:
-	@echo "Creando divisiones de conjunto de datos con parámetros personalizados..."
-	@if [ -z "$(METADATA)" ] || [ -z "$(NIFTI_DIR)" ] || [ -z "$(OUTPUT_DIR)" ]; then \
-		echo "Error: Se requieren variables METADATA, NIFTI_DIR y OUTPUT_DIR."; \
-		echo "Uso: make data-split-custom METADATA=/ruta/al/metadata.csv NIFTI_DIR=/ruta/a/nifti OUTPUT_DIR=/ruta/salida [N_SPLITS=5]"; \
-		exit 1; \
-	fi
-	@python src/data/process_data.py \
-		--metadata $(METADATA) \
-		--data-dir $(NIFTI_DIR) \
-		--output-dir $(OUTPUT_DIR) \
-		--n-splits $(N_SPLITS) \
 		$(if $(VERBOSE),--verbose,--quiet)
 
-# Modificar la regla data-splits para que solo llame a data-split
-data-splits: data-hdf5 data-split
+# # Nueva regla separada para crear divisiones del dataset
+# data-split:
+# 	@echo "Creando divisiones de conjunto de datos..."
+# 	@if [ -f "$(DATA_OUTPUT)/metadata.csv" ]; then \
+# 		python src/data/process_data.py \
+# 			--metadata $(DATA_OUTPUT)/metadata.csv \
+# 			--data-dir $(DATA_OUTPUT)/nifti \
+# 			--output-dir $(DATA_OUTPUT)/hdf5 \
+# 			--n-splits $(N_SPLITS) \
+# 			$(if $(VERBOSE),--quiet); \
+# 	else \
+# 		echo "ERROR: Archivo de metadatos no encontrado en $(DATA_OUTPUT)/metadata.csv"; \
+# 		echo "El proceso anterior puede haber fallado."; \
+# 		exit 1; \
+# 	fi
+
+# # Regla para dividir con parámetros específicos
+# data-split-custom:
+# 	@echo "Creando divisiones de conjunto de datos con parámetros personalizados..."
+# 	@if [ -z "$(METADATA)" ] || [ -z "$(NIFTI_DIR)" ] || [ -z "$(OUTPUT_DIR)" ]; then \
+# 		echo "Error: Se requieren variables METADATA, NIFTI_DIR y OUTPUT_DIR."; \
+# 		echo "Uso: make data-split-custom METADATA=/ruta/al/metadata.csv NIFTI_DIR=/ruta/a/nifti OUTPUT_DIR=/ruta/salida [N_SPLITS=5]"; \
+# 		exit 1; \
+# 	fi
+# 	@python src/data/process_data.py \
+# 		--metadata $(METADATA) \
+# 		--data-dir $(NIFTI_DIR) \
+# 		--output-dir $(OUTPUT_DIR) \
+# 		--n-splits $(N_SPLITS) \
+# 		$(if $(VERBOSE),--verbose,--quiet)
+
+# # Modificar la regla data-splits para que solo llame a data-split
+# data-splits: data-hdf5 data-split
 			
 # Flujo de trabajo completo
-data: data-nifti data-hdf5 data-split
+data: data-nifti data-hdf5
 	@echo "Procesamiento de datos completado"
+
+# Generar datos sintéticos para probar el pipeline
+generate-sample-data:
+	@echo "Generando datos sintéticos para pruebas..."
+	python src/data/generate_sample_data.py --output-dir $(DATASET_PATH) --verbose
 
 # Comando para entrenamiento básico
 train:

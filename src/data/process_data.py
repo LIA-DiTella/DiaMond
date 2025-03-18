@@ -1,3 +1,6 @@
+# UNUSED
+
+
 import os
 import sys
 import numpy as np
@@ -64,42 +67,76 @@ def create_h5_dataset(
         modalities: Lista de modalidades a incluir
         verbose: Si es True, muestra información adicional durante el proceso
     """
+
+    if verbose:
+        print("Creating HDF5 file")
+
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     with h5py.File(output_path, "w") as h5f:
+        if verbose:
+            logger.debug(f"Creando archivo HDF5 en {output_path}")
+
         # Crear grupo de estadísticas
+        print("Creating stats group")
         stats_group = h5f.create_group("stats")
         stats_group.attrs["num_subjects"] = len(subject_data)
 
+        print("Counting diagnoses")
         # Contar diagnósticos
         all_dx = [s["diagnosis"] for s in subject_data]
         dx_counts = {dx: all_dx.count(dx) for dx in set(all_dx)}
         for dx, count in dx_counts.items():
             stats_group.attrs[f"count_{dx}"] = count
 
+        print("Adding subjects")
         # Añadir cada sujeto
-        for i, subject in enumerate(tqdm(subject_data, desc=f"Creando {output_path}")):
+        subject_iterator = tqdm(subject_data, desc=f"Creando {output_path}")
+        for i, subject in enumerate(subject_iterator):
             # Usar el RID si está disponible, de lo contrario usar índice
             subject_id = subject.get("rid", f"subject_{i}")
+
+            if not subject_id:
+                print("No subject ID found")
+                continue
+
+            # Verificar que los datos MRI y PET son arrays de numpy válidos
+            has_mri = "mri_data" in subject and isinstance(
+                subject["mri_data"], np.ndarray
+            )
+            has_pet = "pet_data" in subject and isinstance(
+                subject["pet_data"], np.ndarray
+            )
+
+            if not (has_mri or has_pet):
+                print(f"Skipping subject {i}: {subject_id} - no valid image data")
+                continue
+
+            subject_iterator.set_postfix_str(f"Subject {subject_id}")
 
             # Limpiar el id para asegurar que sea un nombre de grupo válido en HDF5
             subject_id = re.sub(r"[^\w]", "_", str(subject_id))
 
+            print(f"Creating group for subject {subject_id}")
             subject_group = h5f.create_group(subject_id)
             subject_group.attrs["RID"] = subject["rid"]
             subject_group.attrs["DX"] = subject["diagnosis"]
 
             # Añadir datos de MRI si están disponibles
-            if "MRI" in modalities and "mri_data" in subject:
+            if "MRI" in modalities and has_mri:
                 mri_group = subject_group.create_group("MRI/T1")
-                mri_group.create_dataset("data", data=subject["mri_data"])
+                mri_group.create_dataset(
+                    "data", data=subject["mri_data"], dtype=np.float32
+                )
                 if verbose:
                     logger.debug(f"Añadidos datos MRI para sujeto {subject_id}")
 
             # Añadir datos de PET si están disponibles
-            if "PET" in modalities and "pet_data" in subject:
+            if "PET" in modalities and has_pet:
                 pet_group = subject_group.create_group("PET/FDG")
-                pet_group.create_dataset("data", data=subject["pet_data"])
+                pet_group.create_dataset(
+                    "data", data=subject["pet_data"], dtype=np.float32
+                )
                 if verbose:
                     logger.debug(f"Añadidos datos PET para sujeto {subject_id}")
 
@@ -152,6 +189,8 @@ def prepare_dataset_splits(
         os.path.join(output_dir, "test.h5"), test_subjects, verbose=verbose
     )
 
+    print("Creating splits")
+
     # Crear divisiones para validación cruzada
     for split in range(n_splits):
         # Para cada split, usamos una semilla diferente
@@ -172,9 +211,11 @@ def prepare_dataset_splits(
             train_subjects,
             verbose=verbose,
         )
+
         create_h5_dataset(
             os.path.join(output_dir, f"{split}-valid.h5"), val_subjects, verbose=verbose
         )
+
         create_h5_dataset(
             os.path.join(output_dir, f"{split}-test.h5"), test_subjects, verbose=verbose
         )
@@ -298,80 +339,95 @@ def split_dataset(
     logger.setLevel(log_level)
 
     try:
-        with h5py.File(input_path, 'r') as h5f:
+        with h5py.File(input_path, "r") as h5f:
             # Obtener IDs de sujetos (excluyendo 'stats' si existe)
-            subject_ids = [k for k in h5f.keys() if k != 'stats']
-            
+            subject_ids = [k for k in h5f.keys() if k != "stats"]
+
             if verbose:
-                logger.info(f"Dividiendo dataset con {len(subject_ids)} sujetos en {n_splits} splits")
-            
+                logger.info(
+                    f"Dividiendo dataset con {len(subject_ids)} sujetos en {n_splits} splits"
+                )
+
             # Extraer diagnósticos para estratificación
-            diagnoses = [h5f[sid].attrs.get('DX', 'Unknown') for sid in subject_ids]
-            
+            diagnoses = [h5f[sid].attrs.get("DX", "Unknown") for sid in subject_ids]
+
             # Convertir a DataFrame para facilitar la división
-            df = pd.DataFrame({'subject_id': subject_ids, 'diagnosis': diagnoses})
-            
+            df = pd.DataFrame({"subject_id": subject_ids, "diagnosis": diagnoses})
+
             # Primero separar el conjunto de prueba global
             train_val_df, test_df = train_test_split(
                 df,
                 test_size=test_size,
                 random_state=random_seed,
-                stratify=df['diagnosis'] if len(set(df['diagnosis'])) > 1 else None
+                stratify=df["diagnosis"] if len(set(df["diagnosis"])) > 1 else None,
             )
-            
+
             # Crear conjuntos para cada split de validación cruzada
             for split in range(n_splits):
                 split_seed = random_seed + split
-                
+
                 # Para cada split, crear train/val/test
-                if len(set(train_val_df['diagnosis'])) > 1:
+                if len(set(train_val_df["diagnosis"])) > 1:
                     train_df, val_df = train_test_split(
                         train_val_df,
                         test_size=valid_size,
                         random_state=split_seed,
-                        stratify=train_val_df['diagnosis']
+                        stratify=train_val_df["diagnosis"],
                     )
                 else:
                     train_df, val_df = train_test_split(
-                        train_val_df,
-                        test_size=valid_size,
-                        random_state=split_seed
+                        train_val_df, test_size=valid_size, random_state=split_seed
                     )
-                
+
+                print("Train DF")
+                print(train_df)
+
+                print("Val DF")
+                print(val_df)
+
+                print("Test DF")
+                print(test_df)
+
                 # Crear archivos HDF5 para cada conjunto
                 split_files = [
                     (train_df, f"{split}-train.h5", "entrenamiento"),
                     (val_df, f"{split}-valid.h5", "validación"),
-                    (test_df, f"{split}-test.h5", "prueba")
+                    (test_df, f"{split}-test.h5", "prueba"),
                 ]
-                
+
                 for subset_df, filename, subset_name in split_files:
                     output_path = os.path.join(output_dir, filename)
-                    
-                    with h5py.File(output_path, 'w') as out_f:
+
+                    with h5py.File(output_path, "w") as out_f:
                         # Copiar estadísticas si existen
-                        if 'stats' in h5f:
-                            h5f.copy('stats', out_f)
-                            
+                        if "stats" in h5f:
+                            h5f.copy("stats", out_f)
+
                             # Actualizar estadísticas para este subset
-                            if 'stats' in out_f:
-                                out_f['stats'].attrs['num_subjects'] = len(subset_df)
-                                
+                            if "stats" in out_f:
+                                out_f["stats"].attrs["num_subjects"] = len(subset_df)
+
                                 # Actualizar conteo de diagnósticos
-                                dx_counts = subset_df['diagnosis'].value_counts().to_dict()
+                                dx_counts = (
+                                    subset_df["diagnosis"].value_counts().to_dict()
+                                )
                                 for dx, count in dx_counts.items():
-                                    out_f['stats'].attrs[f'count_{dx}'] = count
-                        
+                                    out_f["stats"].attrs[f"count_{dx}"] = count
+
                         # Copiar sujetos
                         for _, row in subset_df.iterrows():
-                            subject_id = row['subject_id']
+                            subject_id = row["subject_id"]
                             h5f.copy(h5f[subject_id], out_f, name=subject_id)
-                    
+
                     if verbose:
-                        logger.info(f"Split {split}, conjunto de {subset_name}: {len(subset_df)} sujetos guardados en {output_path}")
+                        logger.info(
+                            f"Split {split}, conjunto de {subset_name}: {len(subset_df)} sujetos guardados en {output_path}"
+                        )
 
         if verbose:
-            logger.info(f"División de dataset completada. Archivos guardados en {output_dir}")
+            logger.info(
+                f"División de dataset completada. Archivos guardados en {output_dir}"
+            )
 
     except Exception as e:
         logger.error(f"Error al dividir el dataset: {e}")
