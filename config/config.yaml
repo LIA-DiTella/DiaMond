@@ -4,7 +4,7 @@ modality: multi
 split: 1
 
 # Corregido para apuntar al directorio que contiene los archivos h5, no a un archivo específico
-dataset_path: /Users/nacho/Desktop/code/DiaMond/data/processed/hdf5
+dataset_path: data/processed/hdf5
 class_num: 3
 reweight: False
 with_mri: True

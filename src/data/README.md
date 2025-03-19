@@ -37,20 +37,20 @@ src/data/data/
 ### 1. Conversión DICOM a NIFTI
 
 ```bash
-python dicom_converter.py --input /Users/nacho/Desktop/code/DiaMond/src/data/data/ADNI\ Data/ --output /ruta/a/datos/adni_processed/ --modality both --batch
+python dicom_converter.py --input /src/data/data/ADNI\ Data/ --output /ruta/a/datos/adni_processed/ --modality both --batch
 ```
 
 ### 2. Procesamiento completo (DICOM a HDF5)
 
 ```bash
-# Si tienes un archivo CSV con datos clínicos:/nacho/Desktop/code/DiaMond/src/data/data/ADNI\ Data/ --output-dir /ruta/a/datos/adni_processed/ --clinical-csv /Users/nacho/Desktop/code/DiaMond/src/data/data/ADNI\ Metadata/clinical_data.csv
-python process_adni_data.py --dicom-dir /Users/nacho/Desktop/code/DiaMond/src/data/data/ADNI\ Data/ --output-dir /ruta/a/datos/adni_processed/ --clinical-csv /ruta/a/tu/archivo/clinical_data.csv
+# Si tienes un archivo CSV con datos clínicos:/nacho/Desktop/code/DiaMond/src/data/data/ADNI\ Data/ --output-dir /ruta/a/datos/adni_processed/ --clinical-csv /src/data/data/ADNI\ Metadata/clinical_data.csv
+python process_adni_data.py --dicom-dir /src/data/data/ADNI\ Data/ --output-dir /ruta/a/datos/adni_processed/ --clinical-csv /ruta/a/tu/archivo/clinical_data.csv
 
 # Generación automática de datos clínicos a partir de XML:
-python process_adni_data.py --dicom-dir /Users/nacho/Desktop/code/DiaMond/src/data/data/ADNI\ Data/ --output-dir /ruta/a/datos/adni_processed/ --generate-clinical
+python process_adni_data.py --dicom-dir /src/data/data/ADNI\ Data/ --output-dir /ruta/a/datos/adni_processed/ --generate-clinical
 bash
 # Sin datos clínicos (se intentará generarlos automáticamente):python process_data.py --metadata /ruta/a/datos/adni_processed/metadata.csv --data-dir /ruta/a/datos/adni_processed/nifti/ --output-dir /ruta/a/datos/adni_processed/hdf5/ --n-splits 5
-python process_adni_data.py --dicom-dir /Users/nacho/Desktop/code/DiaMond/src/data/data/ADNI\ Data/ --output-dir /ruta/a/datos/adni_processed/
+python process_adni_data.py --dicom-dir /src/data/data/ADNI\ Data/ --output-dir /ruta/a/datos/adni_processed/
 ```
 
 mendaciones para Pruebas
