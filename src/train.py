@@ -174,6 +174,12 @@ def train(
     )
 
     if head is not None:
+
+        # print RAM estimation for the head
+        print(
+            f"Head RAM estimation: {sum(p.numel() for p in head.parameters()) * 4 / 1024 / 1024} MB"
+        )
+
         head.train()
 
     cumulative_loss = 0.0
