@@ -152,7 +152,7 @@ class TestDicomConverter(unittest.TestCase):
         Esta prueba utiliza datos DICOM reales del proyecto si están disponibles
         """
         # Buscar carpeta de datos ADNI real
-        real_data_path = "/Users/nacho/Desktop/code/DiaMond/src/data/data/ADNI Data"
+        real_data_path = "../src/data/data/ADNI Data"
 
         if not os.path.exists(real_data_path):
             self.skipTest("Carpeta de datos ADNI reales no encontrada")
