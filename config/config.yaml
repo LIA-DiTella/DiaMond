@@ -33,7 +33,9 @@ test: False
 pretrained: Null
 
 ### wandb config
-use_wandb: False
+use_wandb: True
 wandb_project: DiaMond
 wandb_entity: pardo
-wandb_name: null # Will be auto-generated if null
+wandb_name: DiaMond
+wandb_tags: [DiaMond, multi, split1]
+wandb_notes: "DiaMond multi split1"
