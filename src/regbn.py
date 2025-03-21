@@ -288,7 +288,7 @@ class proj_matrix_estimator(object):
         self.lbfgs_kwargs = lbfgs_kwargs
 
     def get_usx(self, x: Tensor, lambda_: Tensor, u: Tensor, s_diag: Tensor) -> Tensor:
-        sl = torch.pow(s_diag, 2) + lambda_.to(u.get_device())
+        sl = torch.pow(s_diag, 2) + lambda_.to(self.device)
         sl = torch.nan_to_num(sl, nan=epsilon_, posinf=epsilon_, neginf=epsilon_)
         sl_inv = inv_torch(torch.diag(sl))
         usx = torch.mm(sl_inv, torch.mm(torch.diag(s_diag), torch.mm(u.t(), x)))
@@ -304,7 +304,7 @@ class proj_matrix_estimator(object):
         return objective
 
     def get_W_plus(self, lambda_, u, s_diag, v) -> Tensor:
-        sl_diag = torch.pow(s_diag, 2.0) + lambda_.to(u.get_device())
+        sl_diag = torch.pow(s_diag, 2.0) + lambda_.to(self.device)
         sl_diag = torch.nan_to_num(
             sl_diag, nan=epsilon_, posinf=epsilon_, neginf=epsilon_
         )
