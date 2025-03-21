@@ -285,7 +285,8 @@ class proj_matrix_estimator(object):
         self,
         figure: bool = False,
         pred_tolerance: float = 0.05,
-        device: str = "cuda:0" , ** lbfgs_kwargs,
+        device: str = "cuda:0",
+        **lbfgs_kwargs,
     ) -> None:
         self.figure = figure
         self.pred_tolerance = pred_tolerance
@@ -479,11 +480,12 @@ def _get_norm_out(
 
 
 if __name__ == "__main__":
-    gpu = 0
+    cuda_id = 0
+    device = torch.device(f"cuda:{cuda_id}" if torch.cuda.is_available() else ("mps" if (torch.backends.mps.is_available() and torch.backends.mps.is_built()) else "cpu"))
 
     batchSize = 100
-    f = torch.rand([batchSize, 128]).to(f"cuda:{gpu}")
-    g = torch.rand([batchSize, 16]).to(f"cuda:{gpu}")
+    f = torch.rand([batchSize, 128]).to(device)
+    g = torch.rand([batchSize, 16]).to(device)
     kwargs = {
         "gpu": gpu,
         "f_num_channels": 128,
@@ -495,9 +497,10 @@ if __name__ == "__main__":
         "affine": True,
         "sigma_THR": 0.0,
         "sigma_MIN": 0.0,
+        "device": device,
     }
 
-    regbn_module = RegBN(**kwargs).to(f"cuda:{gpu}")
+    regbn_module = RegBN(**kwargs).to(device)
     print(regbn_module)
 
     kwargs_train = {"is_training": True, "n_epoch": 1, "steps_per_epoch": 100}
