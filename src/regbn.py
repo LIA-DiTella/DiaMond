@@ -146,6 +146,7 @@ class RegBN(nn.Module):
             "line_search_fn": "strong_wolfe",
             "tolerance_grad": 1e-05,
             "tolerance_change": 1e-09,
+            "device": self.device,
         }
 
         self.W_calc = proj_matrix_estimator(lbfgs_kwargs)
@@ -281,11 +282,15 @@ class proj_matrix_estimator(object):
     """Computes the projection matrix in eq. (4)"""
 
     def __init__(
-        self, figure: bool = False, pred_tolerance: float = 0.05, **lbfgs_kwargs
+        self,
+        figure: bool = False,
+        pred_tolerance: float = 0.05,
+        device: str = "cuda:0" , ** lbfgs_kwargs,
     ) -> None:
         self.figure = figure
         self.pred_tolerance = pred_tolerance
         self.lbfgs_kwargs = lbfgs_kwargs
+        self.device = device
 
     def get_usx(self, x: Tensor, lambda_: Tensor, u: Tensor, s_diag: Tensor) -> Tensor:
         sl = torch.pow(s_diag, 2) + lambda_.to(self.device)
