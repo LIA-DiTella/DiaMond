@@ -33,3 +33,5 @@ zenml>=0.40.0
 # Descomenta estas líneas si necesitas soporte para CUDA específico
 # torch-cuda>=11.7.0
 # monai-cuda>=0.8.0
+
+einops>=0.3.2
