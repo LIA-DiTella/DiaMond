@@ -498,23 +498,26 @@ def custom_collate_fn(batch):
             pet_batch_normalized.append(p[slices])
         pet_batch = pet_batch_normalized
 
-    # Convertir a tensor
+    # Convertir a tensor sin moverlos a la GPU
     mri_tensor = torch.stack(mri_batch, 0)
     pet_tensor = torch.stack(pet_batch, 0)
 
     # Convertir etiquetas a tensor
     labels_tensor = torch.tensor(labels)
 
-    mri_tensor = mri_tensor.to(device)
-    pet_tensor = pet_tensor.to(device)
-    labels_tensor = labels_tensor.to(device)
-
+    # No mover a GPU aquí, lo haremos en get_output
     return (mri_tensor, pet_tensor), labels_tensor
 
 
 def main():
     print(f"Torch: {torch.__version__}")
     print(f"Device: {device} - Cuda Available: {torch.cuda.is_available()}")
+
+    # Establecer método de inicio para multiprocessing
+    if torch.cuda.is_available():
+        # Configurar el método de inicio correcto para CUDA y multiprocessing
+        torch.multiprocessing.set_start_method('spawn', force=True)
+        print("Establecido método de inicio 'spawn' para multiprocessing con CUDA")
 
     args = parse_args()
 
@@ -646,7 +649,7 @@ def main():
                 dataset=train_data,
                 batch_size=wandb.config.batch_size,
                 shuffle=True,
-                num_workers=12,
+                num_workers=4 if torch.cuda.is_available() else 12,  # Reducir workers con CUDA
                 drop_last=True,
                 collate_fn=custom_collate_fn,  # Añadir custom collate
             )
@@ -654,7 +657,7 @@ def main():
                 dataset=valid_data,
                 batch_size=wandb.config.batch_size,
                 shuffle=True,
-                num_workers=4,
+                num_workers=2 if torch.cuda.is_available() else 4,  # Reducir workers con CUDA
                 drop_last=False,
                 collate_fn=custom_collate_fn,  # Añadir custom collate
             )
@@ -672,6 +675,7 @@ def main():
                 dataset=test_data,
                 batch_size=wandb.config.batch_size,
                 shuffle=True,
+                num_workers=2 if torch.cuda.is_available() else 4,  # Reducir workers con CUDA
                 collate_fn=custom_collate_fn,  # Añadir custom collate
             )
 
