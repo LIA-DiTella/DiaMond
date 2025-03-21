@@ -4,7 +4,7 @@ env:
 	@if conda env list | grep -q "diamond"; then \
 		echo "Environment exists,"; \
 		echo "To update environment run: make env-update"; \
-		echo "Run: conda activate diamond"; \
+		conda activate diamond; \
 	else \
 		echo "Creating new environment..."; \
 		conda create --name diamond python=3.12 --force && \
