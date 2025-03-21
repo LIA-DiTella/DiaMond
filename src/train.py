@@ -174,7 +174,6 @@ def train(
     )
 
     if head is not None:
-
         # print RAM estimation for the head
         print(
             f"Head RAM estimation: {sum(p.numel() for p in head.parameters()) * 4 / 1024 / 1024} MB"
@@ -445,6 +444,31 @@ def test(
 ############################################################################################
 
 
+# Agrega esta función para manejar el collate personalizado
+def custom_collate_fn(batch):
+    """
+    Custom collate function to handle tensors of different sizes.
+    """
+    mri_batch = []
+    pet_batch = []
+    labels = []
+
+    for (mri, pet), label in batch:
+        mri_batch.append(mri)
+        pet_batch.append(pet)
+        labels.append(label)
+
+    # Convierte a tensores solo si todos tienen la misma forma
+    if len(set(m.shape for m in mri_batch)) == 1:
+        mri_batch = torch.stack(mri_batch, 0)
+    if len(set(p.shape for p in pet_batch)) == 1:
+        pet_batch = torch.stack(pet_batch, 0)
+
+    labels = torch.tensor(labels)
+
+    return (mri_batch, pet_batch), labels
+
+
 def main():
     print(f"Torch: {torch.__version__}")
     print(f"Device: {device} - Cuda Available: {torch.cuda.is_available()}")
@@ -581,6 +605,7 @@ def main():
                 shuffle=True,
                 num_workers=12,
                 drop_last=True,
+                collate_fn=custom_collate_fn,  # Añadir custom collate
             )
             valid_loader = DataLoader(
                 dataset=valid_data,
@@ -588,6 +613,7 @@ def main():
                 shuffle=True,
                 num_workers=4,
                 drop_last=False,
+                collate_fn=custom_collate_fn,  # Añadir custom collate
             )
         else:
             split_test_path = f"{dataset_path}/{split}-test.h5"
@@ -600,7 +626,10 @@ def main():
                 with_pet=wandb.config.with_pet,
             )
             test_loader = DataLoader(
-                dataset=test_data, batch_size=wandb.config.batch_size, shuffle=True
+                dataset=test_data,
+                batch_size=wandb.config.batch_size,
+                shuffle=True,
+                collate_fn=custom_collate_fn,  # Añadir custom collate
             )
 
         # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
