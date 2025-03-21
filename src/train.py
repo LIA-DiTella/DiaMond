@@ -116,13 +116,35 @@ def get_output(
     is_training: bool = False,
 ):
     (mri_data, pet_data), label = batch_data
-    mri_data, pet_data, label = (
-        mri_data.to(device),
-        pet_data.to(device),
-        label.to(device),
-    )
+    
+    # Manejar el caso en que mri_data o pet_data son listas (desde custom_collate_fn)
+    if isinstance(mri_data, list):
+        # Convertir cada elemento de la lista a tensor y moverlo al dispositivo
+        mri_data = [m.to(device) for m in mri_data]
+    else:
+        mri_data = mri_data.to(device)
+        
+    if isinstance(pet_data, list):
+        # Convertir cada elemento de la lista a tensor y moverlo al dispositivo
+        pet_data = [p.to(device) for p in pet_data]
+    else:
+        pet_data = pet_data.to(device)
+        
+    if isinstance(label, list):
+        label = [l.to(device) for l in label]
+    else:
+        label = label.to(device)
+    
     # data = (mri_data, pet_data)
     if modality == "multi":
+        # Si los datos son listas, es posible que necesitemos procesarlos individualmente
+        if isinstance(pet_data, list) or isinstance(mri_data, list):
+            # Abortar y mostrar un mensaje de error
+            raise ValueError(
+                "El modelo no puede procesar lotes con tensores de diferentes tamaños. "
+                "Por favor, asegúrese de que todos los tensores en el lote tengan el mismo tamaño."
+            )
+        
         output_pet = model_pet(pet_data)
         output_mri = model_mri(mri_data)
 
@@ -448,24 +470,61 @@ def test(
 def custom_collate_fn(batch):
     """
     Custom collate function to handle tensors of different sizes.
+    Ensure all items have the same shape or fail gracefully.
     """
+    if not batch:
+        return None
+    
     mri_batch = []
     pet_batch = []
     labels = []
 
-    for (mri, pet), label in batch:
-        mri_batch.append(mri)
-        pet_batch.append(pet)
-        labels.append(label)
+    for data in batch:
+        # Manejar posibles errores en la estructura de los datos
+        try:
+            (mri, pet), label = data
+            mri_batch.append(mri)
+            pet_batch.append(pet)
+            labels.append(label)
+        except Exception as e:
+            print(f"Error en el formato de los datos: {e}")
+            continue
 
-    # Convierte a tensores solo si todos tienen la misma forma
-    if len(set(m.shape for m in mri_batch)) == 1:
+    # Verificar que tengamos datos para procesar
+    if not mri_batch or not pet_batch or not labels:
+        raise RuntimeError("No hay datos válidos en el lote")
+    
+    # Verificar que todos los tensores MRI tengan la misma forma
+    mri_shapes = set(m.shape for m in mri_batch)
+    pet_shapes = set(p.shape for p in pet_batch)
+    
+    if len(mri_shapes) > 1:
+        print(f"ADVERTENCIA: Tensores MRI de diferentes formas detectados: {mri_shapes}")
+    
+    if len(pet_shapes) > 1:
+        print(f"ADVERTENCIA: Tensores PET de diferentes formas detectados: {pet_shapes}")
+    
+    # Apilar solo si todas las formas son iguales
+    if len(mri_shapes) == 1:
         mri_batch = torch.stack(mri_batch, 0)
-    if len(set(p.shape for p in pet_batch)) == 1:
+    else:
+        # Si las formas son diferentes, recortar todos los tensores al tamaño más pequeño
+        # (esto es una solución alternativa, puede no ser adecuada para todos los casos)
+        min_shape = tuple(min(dim) for dim in zip(*[m.shape for m in mri_batch]))
+        print(f"Recortando todos los tensores MRI a la forma mínima: {min_shape}")
+        mri_batch = torch.stack([m[tuple(slice(0, s) for s in min_shape)] for m in mri_batch], 0)
+    
+    if len(pet_shapes) == 1:
         pet_batch = torch.stack(pet_batch, 0)
-
+    else:
+        # Similar para los datos PET
+        min_shape = tuple(min(dim) for dim in zip(*[p.shape for p in pet_batch]))
+        print(f"Recortando todos los tensores PET a la forma mínima: {min_shape}")
+        pet_batch = torch.stack([p[tuple(slice(0, s) for s in min_shape)] for p in pet_batch], 0)
+    
+    # Convertir etiquetas a tensor
     labels = torch.tensor(labels)
-
+    
     return (mri_batch, pet_batch), labels
 
 
