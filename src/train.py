@@ -27,8 +27,8 @@ from regbn import RegBN
 import warnings
 
 cuda_id = 0
-# device = torch.device(f"cuda:{cuda_id}" if torch.cuda.is_available() else ("mps" if (torch.backends.mps.is_available() and torch.backends.mps.is_built()) else "cpu"))
-device = "cpu"
+device = torch.device(f"cuda:{cuda_id}" if torch.cuda.is_available() else ("mps" if (torch.backends.mps.is_available() and torch.backends.mps.is_built()) else "cpu"))
+# device = "cpu"
 
 
 def warn(*args, **kwargs):
