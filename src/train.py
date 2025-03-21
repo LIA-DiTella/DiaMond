@@ -452,7 +452,7 @@ def custom_collate_fn(batch):
     """
     if not batch:
         return None
-    
+
     mri_batch = []
     pet_batch = []
     labels = []
@@ -471,16 +471,16 @@ def custom_collate_fn(batch):
     # Verificamos que tengamos datos para procesar
     if not mri_batch or not pet_batch or not labels:
         raise RuntimeError("No hay datos válidos en el lote")
-    
+
     # Determinar el tamaño común para los tensores MRI y PET
     # Podemos usar el tamaño más pequeño de todos los tensores como referencia
     mri_shapes = [m.shape for m in mri_batch]
     pet_shapes = [p.shape for p in pet_batch]
-    
+
     # Calculamos la forma mínima para cada dimensión
     min_mri_shape = tuple(min(dim) for dim in zip(*mri_shapes))
     min_pet_shape = tuple(min(dim) for dim in zip(*pet_shapes))
-    
+
     # Recortamos todos los tensores al tamaño mínimo si es necesario
     if any(shape != min_mri_shape for shape in mri_shapes):
         print(f"Normalizando tensores MRI al tamaño: {min_mri_shape}")
@@ -489,7 +489,7 @@ def custom_collate_fn(batch):
             slices = tuple(slice(0, s) for s in min_mri_shape)
             mri_batch_normalized.append(m[slices])
         mri_batch = mri_batch_normalized
-    
+
     if any(shape != min_pet_shape for shape in pet_shapes):
         print(f"Normalizando tensores PET al tamaño: {min_pet_shape}")
         pet_batch_normalized = []
@@ -497,14 +497,18 @@ def custom_collate_fn(batch):
             slices = tuple(slice(0, s) for s in min_pet_shape)
             pet_batch_normalized.append(p[slices])
         pet_batch = pet_batch_normalized
-    
+
     # Convertir a tensor
     mri_tensor = torch.stack(mri_batch, 0)
     pet_tensor = torch.stack(pet_batch, 0)
-    
+
     # Convertir etiquetas a tensor
     labels_tensor = torch.tensor(labels)
-    
+
+    mri_tensor = mri_tensor.to(device)
+    pet_tensor = pet_tensor.to(device)
+    labels_tensor = labels_tensor.to(device)
+
     return (mri_tensor, pet_tensor), labels_tensor
 
 
