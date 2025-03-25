@@ -165,3 +165,20 @@ cython_debug/
 /src/data/data
 /data/processed
 /wandb
+
+# Airflow specific files
+airflow.cfg
+airflow.db
+airflow-webserver.pid
+webserver_config.py
+airflow-*.log
+airflow-*.pid
+airflow-*.err
+airflow-*.out
+logs/
+airflow/
+unittests.cfg
+
+# Local Airflow data
+airflow/dags/__pycache__/
+airflow/plugins/__pycache__/
