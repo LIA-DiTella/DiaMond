@@ -27,7 +27,15 @@ from regbn import RegBN
 import warnings
 
 cuda_id = 0
-device = torch.device(f"cuda:{cuda_id}" if torch.cuda.is_available() else ("mps" if (torch.backends.mps.is_available() and torch.backends.mps.is_built()) else "cpu"))
+device = torch.device(
+    f"cuda:{cuda_id}"
+    if torch.cuda.is_available()
+    else (
+        "mps"
+        if (torch.backends.mps.is_available() and torch.backends.mps.is_built())
+        else "cpu"
+    )
+)
 # device = "cpu"
 
 
@@ -116,12 +124,12 @@ def get_output(
     is_training: bool = False,
 ):
     (mri_data, pet_data), label = batch_data
-    
+
     # Mover los tensores al dispositivo
     mri_data = mri_data.to(device)
     pet_data = pet_data.to(device)
     label = label.to(device)
-    
+
     # data = (mri_data, pet_data)
     if modality == "multi":
         output_pet = model_pet(pet_data)
@@ -516,7 +524,7 @@ def main():
     # Establecer método de inicio para multiprocessing
     if torch.cuda.is_available():
         # Configurar el método de inicio correcto para CUDA y multiprocessing
-        torch.multiprocessing.set_start_method('spawn', force=True)
+        torch.multiprocessing.set_start_method("spawn", force=True)
         print("Establecido método de inicio 'spawn' para multiprocessing con CUDA")
 
     args = parse_args()
@@ -649,7 +657,9 @@ def main():
                 dataset=train_data,
                 batch_size=wandb.config.batch_size,
                 shuffle=True,
-                num_workers=4 if torch.cuda.is_available() else 12,  # Reducir workers con CUDA
+                num_workers=4
+                if torch.cuda.is_available()
+                else 12,  # Reducir workers con CUDA
                 drop_last=True,
                 collate_fn=custom_collate_fn,  # Añadir custom collate
             )
@@ -657,7 +667,9 @@ def main():
                 dataset=valid_data,
                 batch_size=wandb.config.batch_size,
                 shuffle=True,
-                num_workers=2 if torch.cuda.is_available() else 4,  # Reducir workers con CUDA
+                num_workers=2
+                if torch.cuda.is_available()
+                else 4,  # Reducir workers con CUDA
                 drop_last=False,
                 collate_fn=custom_collate_fn,  # Añadir custom collate
             )
@@ -675,7 +687,9 @@ def main():
                 dataset=test_data,
                 batch_size=wandb.config.batch_size,
                 shuffle=True,
-                num_workers=2 if torch.cuda.is_available() else 4,  # Reducir workers con CUDA
+                num_workers=2
+                if torch.cuda.is_available()
+                else 4,  # Reducir workers con CUDA
                 collate_fn=custom_collate_fn,  # Añadir custom collate
             )
 
