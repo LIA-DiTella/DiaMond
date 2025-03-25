@@ -130,28 +130,48 @@ def get_output(
     pet_data = pet_data.to(device)
     label = label.to(device)
 
+    # Verificar y ajustar las dimensiones de los tensores si es necesario
+    # Imprimir los tamaños para depuración
+    print(f"MRI data shape: {mri_data.shape}")
+    print(f"PET data shape: {pet_data.shape}")
+    
+    # Asegurarse de que los tensores tengan la forma correcta
+    if len(mri_data.shape) == 4:  # [batch, d, h, w]
+        mri_data = mri_data.unsqueeze(1)  # Añadir dimensión de canal [batch, channel, d, h, w]
+    if len(pet_data.shape) == 4:  # [batch, d, h, w]
+        pet_data = pet_data.unsqueeze(1)  # Añadir dimensión de canal [batch, channel, d, h, w]
+    
+    # Volver a verificar las formas después de ajustar
+    print(f"MRI data shape ajustada: {mri_data.shape}")
+    print(f"PET data shape ajustada: {pet_data.shape}")
+
     # data = (mri_data, pet_data)
     if modality == "multi":
-        output_pet = model_pet(pet_data)
-        output_mri = model_mri(mri_data)
+        try:
+            output_pet = model_pet(pet_data)
+            output_mri = model_mri(mri_data)
 
-        # apply late regbn
-        if is_training:
-            kwargs_regbn_train = {
-                "is_training": True,
-                "n_epoch": epoch_id,
-                "steps_per_epoch": steps_per_epoch,
-            }
-        else:
-            kwargs_regbn_train = {"is_training": False}
+            # apply late regbn
+            if is_training:
+                kwargs_regbn_train = {
+                    "is_training": True,
+                    "n_epoch": epoch_id,
+                    "steps_per_epoch": steps_per_epoch,
+                }
+            else:
+                kwargs_regbn_train = {"is_training": False}
 
-        output_pet, output_mri = regbn_module(
-            output_pet, output_mri, **kwargs_regbn_train
-        )
+            output_pet, output_mri = regbn_module(
+                output_pet, output_mri, **kwargs_regbn_train
+            )
 
-        output_mp = model_mp(pet_data, mri_data)
+            output_mp = model_mp(pet_data, mri_data)
 
-        output = (output_pet + output_mri + output_mp) / 3
+            output = (output_pet + output_mri + output_mp) / 3
+        except Exception as e:
+            print(f"Error en el procesamiento: {e}")
+            print(f"Shapes involucrados - MRI: {mri_data.shape}, PET: {pet_data.shape}")
+            raise e
     else:
         raise ValueError(f"Modality {modality} not implemented")
 
@@ -505,6 +525,10 @@ def custom_collate_fn(batch):
             slices = tuple(slice(0, s) for s in min_pet_shape)
             pet_batch_normalized.append(p[slices])
         pet_batch = pet_batch_normalized
+
+    # Imprimir información adicional para depuración
+    print(f"Forma final de MRI después de normalizar: {mri_batch[0].shape}")
+    print(f"Forma final de PET después de normalizar: {pet_batch[0].shape}")
 
     # Convertir a tensor sin moverlos a la GPU
     mri_tensor = torch.stack(mri_batch, 0)
