@@ -182,3 +182,4 @@ unittests.cfg
 # Local Airflow data
 airflow/dags/__pycache__/
 airflow/plugins/__pycache__/
+*.zip
