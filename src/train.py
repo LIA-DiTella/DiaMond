@@ -138,8 +138,15 @@ def get_output(
     # Asegurarse de que los tensores tengan la forma correcta
     if len(mri_data.shape) == 4:  # [batch, d, h, w]
         mri_data = mri_data.unsqueeze(1)  # Añadir dimensión de canal [batch, channel, d, h, w]
+    
+    mri_data = mri_data[:, 0:1, :, :, :]  # Seleccionar solo un canal
+
+    # Corregir la forma del PET si tiene dimensiones incorrectas
     if len(pet_data.shape) == 4:  # [batch, d, h, w]
         pet_data = pet_data.unsqueeze(1)  # Añadir dimensión de canal [batch, channel, d, h, w]
+    
+    # Tomar solo el primer canal si hay múltiples o reorganizar según se necesite
+    pet_data = pet_data[:, 0:1, :, :, :]  # Seleccionar solo un canal
     
     # Volver a verificar las formas después de ajustar
     print(f"MRI data shape ajustada: {mri_data.shape}")
