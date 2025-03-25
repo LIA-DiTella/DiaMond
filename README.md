@@ -62,19 +62,55 @@ After specifying the config file, simply start training/evaluation by:
 python src/train.py
 ```
 
+## Airflow Integration
+
+DiaMond supports [Apache Airflow](https://airflow.apache.org/) for automated workflow orchestration. The following Make commands are available:
+
+```bash
+# Initialize Airflow environment
+make airflow-init
+
+# Start Airflow web server
+make airflow-start
+
+# Start Airflow scheduler
+make airflow-scheduler
+
+# Stop all Airflow processes
+make airflow-stop
+
+# Trigger the data processing DAG
+make airflow-trigger
+
+# Check status of DAGs
+make airflow-status
+
+# Set all required Airflow variables from your current configuration
+make set-airflow-vars
+
+# Run the complete DiaMond pipeline (processing + training)
+make airflow-run-pipeline
+
+# Open the Airflow web interface to monitor pipeline execution
+make airflow-monitor
+```
+
+These commands enable you to schedule and monitor the entire DiaMond workflow from data preprocessing to model training using Airflow's powerful orchestration capabilities.
+
 ## Misc
 
 This project uses:
 
 - [Make](https://www.gnu.org/software/make/) for automation.
+- [Airflow](https://airflow.apache.org/) for workflow orchestration.
 - [Ruff](https://docs.astral.sh/ruff/) for code linting and formatting.
-- [Hypothesis](https://hypothesis.readthedocs.io/en/latest/) for property-based testing.
 - [unittest](https://docs.python.org/3/library/unittest.html) for unit testing.
+- [Hypothesis](https://hypothesis.readthedocs.io/en/latest/) for property-based testing.
 - [PyTorch](https://pytorch.org/) for deep learning models.
-- [Wandb](https://wandb.ai/) for experiment tracking.
 - [Scikit-learn](https://scikit-learn.org/) for metrics and evaluation.
+- [Wandb](https://wandb.ai/) for experiment tracking.
 - [Nibabel](https://nipy.org/nibabel/) for neuroimaging data handling.
+- [PyDICOM](https://pydicom.github.io/) for DICOM file handling.
 - [dicom2nifti](https://github.com/icometrix/dicom2nifti) and [dcm2niix](https://github.com/rordenlab/dcm2niix) for DICOM to NIFTI conversion.
 - [einops](https://github.com/arogozhnikov/einops) for tensor operations.
 - [tqdm](https://tqdm.github.io/) for progress bar visualization.
-- [PyDICOM](https://pydicom.github.io/) for DICOM file handling.

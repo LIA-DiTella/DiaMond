@@ -1,4 +1,4 @@
-.PHONY: env data clean test test-unit test-pipeline install install-dev data-nifti data-hdf5 data-splits data typecheck typecheck-strict test-all dev-setup
+.PHONY: env data clean test test-unit test-pipeline install install-dev data-nifti data-hdf5 data-splits data typecheck typecheck-strict test-all dev-setup airflow-clean
 
 env:
 	@if conda env list | grep -q "diamond"; then \
@@ -191,7 +191,6 @@ clean:
 	rm -rf data/raw/*
 	rm -rf models/*
 	rm -rf logs/*
-	rm -rf src/data/data/ADNI\ Metadata/clinical_data.csv
 	@echo "Archivos limpiados"
 
 # Verificación básica de tipos con mypy
@@ -215,3 +214,122 @@ test-all: typecheck test lint
 # Instalar dependencias de desarrollo (incluye mypy)
 dev-setup:
 	@pip install mypy types-requests pandas-stubs
+
+# Comandos relacionados con Airflow
+airflow-init:
+	@echo "Inicializando Airflow..."
+	@if [ ! -d "$(HOME)/airflow" ]; then \
+		mkdir -p $(HOME)/airflow; \
+		mkdir -p $(HOME)/airflow/dags; \
+		mkdir -p $(HOME)/airflow/logs; \
+		mkdir -p $(HOME)/airflow/plugins; \
+		cp -r dags/* $(HOME)/airflow/dags/; \
+		export AIRFLOW_HOME=$(HOME)/airflow; \
+		pip install apache-airflow; \
+		airflow db init; \
+		airflow users create \
+			--username admin \
+			--firstname Admin \
+			--lastname User \
+			--role Admin \
+			--email ipardo@mail.utdt.edu \
+			--password admin; \
+		echo 'export AIRFLOW_HOME=$(HOME)/airflow' >> ~/.bashrc; \
+		echo "Airflow inicializado. Por favor, reinicie su terminal o ejecute 'source ~/.bashrc'"; \
+	else \
+		echo "El directorio de Airflow ya existe en $(HOME)/airflow"; \
+		cp -r dags/* $(HOME)/airflow/dags/; \
+		echo "DAGs copiados a $(HOME)/airflow/dags/"; \
+	fi
+
+airflow-start:
+	@echo "Iniciando servidor web de Airflow..."
+	@export AIRFLOW_HOME=$(HOME)/airflow; 
+	@echo "Airflow path: $(HOME)/airflow"; \
+	airflow webserver -p 8080 -D
+
+airflow-scheduler:
+	@echo "Iniciando scheduler de Airflow..."
+	airflow scheduler -D
+
+airflow-stop:
+	@echo "Deteniendo procesos de Airflow..."
+	@pkill -f "airflow webserver" || true
+	@pkill -f "airflow scheduler" || true
+	@echo "Procesos de Airflow detenidos."
+
+airflow-trigger:
+	@echo "Ejecutando el DAG de procesamiento de datos..."
+	@export AIRFLOW_HOME=$(HOME)/airflow; \
+	airflow dags trigger diamond_data_processing_pipeline
+
+airflow-status:
+	@echo "Verificando estado del DAG..."
+	@export AIRFLOW_HOME=$(HOME)/airflow; \
+	airflow dags list
+
+# Variables para Airflow
+set-airflow-vars:
+	@echo "Configurando variables de Airflow..."
+	@export AIRFLOW_HOME=$(HOME)/airflow; \
+	airflow variables set diamond_dicom_dir "$(DATA_DICOM)" && \
+	airflow variables set diamond_output_dir "$(DATA_OUTPUT)" && \
+	airflow variables set diamond_clinical_data "$(CLINICAL_DATA)" && \
+	airflow variables set diamond_n_splits "$(N_SPLITS)" && \
+	airflow variables set diamond_verbose "$(VERBOSE)" && \
+	airflow variables set diamond_target_shape "$(IMG_SIZE),$(IMG_SIZE),$(IMG_SIZE)" && \
+	airflow variables set diamond_voxel_size "1.5,1.5,1.5" && \
+	airflow variables set diamond_dataset_path "$(DATASET_PATH)" && \
+	airflow variables set diamond_config "$(CONFIG)" && \
+	airflow variables set diamond_model_dir "$(MODEL_DIR)" && \
+	airflow variables set diamond_img_size "$(IMG_SIZE)" && \
+	airflow variables set diamond_batch_size "$(BATCH_SIZE)" && \
+	airflow variables set diamond_num_epochs "$(NUM_EPOCHS)" && \
+	airflow variables set diamond_learning_rate "$(LR)" && \
+	airflow variables set diamond_num_classes "$(NUM_CLASSES)" && \
+	airflow variables set diamond_train_split "0" && \
+	airflow variables set diamond_use_wandb "$(WANDB)" && \
+	airflow variables set diamond_wandb_key "$(WANDB_KEY)" && \
+	airflow variables set diamond_wandb_project "$(WANDB_PROJECT)" && \
+	airflow variables set diamond_wandb_entity "$(WANDB_ENTITY)" && \
+	echo "Variables configuradas correctamente."
+
+# Comando para ejecutar el pipeline completo en Airflow
+airflow-run-pipeline:
+	@echo "Ejecutando el pipeline completo de DiaMond (procesamiento + entrenamiento)..."
+	@export AIRFLOW_HOME=$(HOME)/airflow; \
+	airflow dags trigger diamond_complete_pipeline
+
+# Comando para monitorear la ejecución del DAG
+airflow-monitor:
+	@echo "Abriendo la interfaz web de Airflow para monitorear el progreso..."
+	@python -m webbrowser "http://localhost:8080/dags/diamond_complete_pipeline/grid"
+
+# Comando para acceder remotamente a la interfaz de Airflow desde un cliente
+airflow-tunnel:
+	@echo "Creando túnel SSH para acceder a la interfaz de Airflow..."
+	@echo "Usa http://localhost:8080 en tu navegador para acceder a la interfaz"
+	@echo "Presiona Ctrl+C para cerrar el túnel cuando termines"
+	@read -p "Ingresa el usuario y servidor (formato: usuario@servidor): " SSH_TARGET && \
+	ssh -L 8080:localhost:8080 $$SSH_TARGET -N
+
+# Comando para limpiar archivos y configuración de Airflow
+airflow-clean:
+	@echo "Limpiando archivos temporales y configuración de Airflow..."
+	@$(MAKE) airflow-stop
+	@rm -f $(HOME)/airflow/airflow.db
+	@rm -f $(HOME)/airflow/*.pid
+	@rm -f $(HOME)/airflow/*.log
+	@rm -f $(HOME)/airflow/webserver_config.py
+	@rm -rf $(HOME)/airflow/logs/*
+	@echo "¿Deseas reinicializar la base de datos de Airflow? [y/N]: "
+	@read -r REINIT && \
+	if [ "$$REINIT" = "y" ] || [ "$$REINIT" = "Y" ]; then \
+		export AIRFLOW_HOME=$(HOME)/airflow; \
+		echo "Reinicializando base de datos de Airflow..."; \
+		airflow db reset -y; \
+		airflow db init; \
+		echo "Base de datos reinicializada correctamente"; \
+	fi
+	@rm -rf $(HOME)/airflow
+	@echo "Limpieza de Airflow completada"

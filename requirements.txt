@@ -29,6 +29,11 @@ pytest-cov>=4.1.0
 # Pipeline de ZenML
 zenml>=0.40.0
 
+# Airflow y sus dependencias
+apache-airflow>=2.5.0
+apache-airflow-providers-http>=2.0.0
+apache-airflow-providers-cncf-kubernetes>=4.0.0
+
 # Opciones para GPU
 # Descomenta estas líneas si necesitas soporte para CUDA específico
 # torch-cuda>=11.7.0
