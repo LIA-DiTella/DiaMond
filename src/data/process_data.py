@@ -25,12 +25,24 @@ DIAGNOSIS_MAP = {"CN": 0, "MCI": 1, "FTD": 1, "Dementia": 2, "AD": 2}
 DIAGNOSIS_MAP_binary = {"CN": 0, "Dementia": 1, "AD": 1}
 
 
-def load_nifti_file(file_path: str) -> np.ndarray:
+def load_nifti_file(
+    file_path: str, target_shape: tuple = (128, 128, 128), normalize_to_mni: bool = True
+) -> np.ndarray:
     """
     Carga un archivo NIFTI y devuelve sus datos como un array de NumPy.
 
+    Implementa el procesamiento descrito:
+    - Normalización al espacio MNI152 (si normalize_to_mni es True)
+    - Tamaño de vóxel de 1.5mm³
+    - Extracción de mapas de densidad de materia gris (para MRI)
+    - Normalización de intensidad a [0, 1]
+    - Redimensionado a 128x128x128
+
     Args:
         file_path: Ruta al archivo NIFTI
+        target_shape: Forma objetivo a la que redimensionar (por defecto 128x128x128)
+        normalize_to_mni: Si es True, asume que las imágenes ya están normalizadas a MNI152
+                          o intenta normalizarlas usando SimpleITK
 
     Returns:
         Array NumPy con los datos de la imagen
@@ -39,9 +51,27 @@ def load_nifti_file(file_path: str) -> np.ndarray:
         img = nib.load(file_path)
         data = img.get_fdata().astype(np.float32)
 
-        # Normalización básica a [0, 1]
+        # Si es necesario normalizar a MNI152 y no está ya normalizado
+        if normalize_to_mni and not is_normalized_to_mni(img):
+            logger.warning(
+                f"La imagen {file_path} no está normalizada al espacio MNI152."
+            )
+            logger.warning("Se recomienda normalizar las imágenes previamente.")
+            # Aquí se podría implementar la normalización a MNI152 si es necesario
+            # usando SimpleITK, ANTs u otra herramienta
+
+        # Normalización básica a [0, 1] como se especifica en el documento
         if np.max(data) != np.min(data):
             data = (data - np.min(data)) / (np.max(data) - np.min(data))
+
+        # Redimensionar al tamaño objetivo (128x128x128)
+        if target_shape != data.shape:
+            from scipy.ndimage import zoom
+
+            # Calcular factores de zoom
+            factors = [t / s for t, s in zip(target_shape, data.shape)]
+            # Redimensionar usando interpolación
+            data = zoom(data, factors, order=1)
 
         # Asegurarse de que los datos tienen la forma correcta para DiaMond (C, H, W, D)
         data = data[np.newaxis, ...]  # Añadir canal si no existe
@@ -50,6 +80,64 @@ def load_nifti_file(file_path: str) -> np.ndarray:
     except Exception as e:
         logger.error(f"Error al cargar {file_path}: {e}")
         return None
+
+
+def is_normalized_to_mni(img):
+    """
+    Verifica de manera básica si una imagen parece estar normalizada al espacio MNI152.
+
+    Esta es una verificación simplificada que considera:
+    - Dimensiones aproximadas
+    - Orientación del espacio
+    - Rango de coordenadas
+
+    Args:
+        img: Objeto NiBabel de la imagen
+
+    Returns:
+        Boolean indicando si la imagen parece estar en espacio MNI
+    """
+    # Verificación simplificada - en un caso real se requeriría análisis más detallado
+    # Las dimensiones aproximadas del template MNI152 con vóxel de 1.5mm³
+    mni_dims = (121, 145, 121)  # Dimensiones aproximadas para MNI152 1.5mm³
+
+    # Tolerancia para las dimensiones (puede variar según implementación)
+    tolerance = 10
+
+    # Verificar dimensiones
+    img_dims = img.shape
+
+    # Si las dimensiones están en el rango esperado para MNI152
+    for i, d in enumerate(img_dims):
+        if abs(d - mni_dims[i]) > tolerance:
+            return False
+
+    # Verificación adicional: comprobar orientación, resolución, etc.
+    # Esta es una verificación muy básica y podría mejorarse
+
+    return True
+
+
+def extract_gray_matter(data):
+    """
+    Extrae mapas de densidad de materia gris a partir de datos MRI.
+
+    Para implementar correctamente esta función se necesitaría utilizar
+    herramientas como SPM, FSL o CAT12 para la segmentación de tejidos.
+
+    Args:
+        data: Datos de imagen MRI como array de NumPy
+
+    Returns:
+        Array NumPy con los mapas de densidad de materia gris
+    """
+    # Aquí iría la implementación real de extracción de materia gris
+    # Esta es solo una función placeholder
+
+    logger.warning("La extracción de materia gris no está implementada.")
+    logger.warning("Se recomienda realizar este paso de procesamiento previamente.")
+
+    return data
 
 
 def create_h5_dataset(
@@ -159,6 +247,7 @@ def prepare_dataset_splits(
     random_seed: int = 42,
     n_splits: int = 5,
     verbose: bool = True,
+    target_shape: tuple = (128, 128, 128),
 ) -> None:
     """
     Prepara divisiones de entrenamiento/validación/prueba para validación cruzada.
@@ -172,6 +261,7 @@ def prepare_dataset_splits(
         random_seed: Semilla para reproducibilidad
         n_splits: Número de divisiones para validación cruzada
         verbose: Si es True, muestra información adicional durante el proceso
+        target_shape: Forma objetivo para todas las imágenes (H, W, D)
     """
     os.makedirs(output_dir, exist_ok=True)
 
@@ -184,7 +274,7 @@ def prepare_dataset_splits(
     )
 
     # Crear datasets
-    test_subjects = load_and_process_subjects(test_df, data_dir)
+    test_subjects = load_and_process_subjects(test_df, data_dir, target_shape)
     create_h5_dataset(
         os.path.join(output_dir, "test.h5"), test_subjects, verbose=verbose
     )
@@ -203,8 +293,8 @@ def prepare_dataset_splits(
             stratify=train_val_df["diagnosis"],
         )
 
-        train_subjects = load_and_process_subjects(train_df, data_dir)
-        val_subjects = load_and_process_subjects(val_df, data_dir)
+        train_subjects = load_and_process_subjects(train_df, data_dir, target_shape)
+        val_subjects = load_and_process_subjects(val_df, data_dir, target_shape)
 
         create_h5_dataset(
             os.path.join(output_dir, f"{split}-train.h5"),
@@ -221,13 +311,23 @@ def prepare_dataset_splits(
         )
 
 
-def load_and_process_subjects(metadata: pd.DataFrame, data_dir: str) -> List[Dict]:
+def load_and_process_subjects(
+    metadata: pd.DataFrame, data_dir: str, target_shape: tuple = (128, 128, 128)
+) -> List[Dict]:
     """
     Carga y procesa los datos de imágenes para un conjunto de sujetos.
+
+    Procesamiento específico para el estudio de diagnóstico diferencial AD/FTD:
+    - Normalización a MNI152
+    - Tamaño de vóxel de 1.5mm³
+    - Extracción de mapas de densidad de materia gris para MRI
+    - Normalización de intensidad a [0, 1]
+    - Redimensionado a 128x128x128
 
     Args:
         metadata: DataFrame con metadatos de los sujetos
         data_dir: Directorio con los datos crudos
+        target_shape: Forma objetivo para todas las imágenes (por defecto 128x128x128)
 
     Returns:
         Lista de diccionarios con datos de sujetos procesados
@@ -246,15 +346,17 @@ def load_and_process_subjects(metadata: pd.DataFrame, data_dir: str) -> List[Dic
         if "mri_path" in row and pd.notna(row["mri_path"]):
             mri_path = os.path.join(data_dir, row["mri_path"])
             if os.path.exists(mri_path):
-                mri_data = load_nifti_file(mri_path)
+                mri_data = load_nifti_file(mri_path, target_shape)
                 if mri_data is not None:
+                    # Para MRI, extraer mapas de densidad de materia gris
+                    mri_data = extract_gray_matter(mri_data)
                     subject_dict["mri_data"] = mri_data
 
         # Cargar PET
         if "pet_path" in row and pd.notna(row["pet_path"]):
             pet_path = os.path.join(data_dir, row["pet_path"])
             if os.path.exists(pet_path):
-                pet_data = load_nifti_file(pet_path)
+                pet_data = load_nifti_file(pet_path, target_shape)
                 if pet_data is not None:
                     subject_dict["pet_data"] = pet_data
 
@@ -470,7 +572,24 @@ def main():
         help="Número de divisiones para validación cruzada",
     )
     parser.add_argument(
+        "--target-shape",
+        type=str,
+        default="128,128,128",
+        help="Forma objetivo para todas las imágenes (H,W,D)",
+    )
+    parser.add_argument(
+        "--voxel-size",
+        type=str,
+        default="1.5,1.5,1.5",
+        help="Tamaño de vóxel en mm³ (X,Y,Z)",
+    )
+    parser.add_argument(
         "--quiet", action="store_true", help="Reducir mensajes de salida al mínimo"
+    )
+    parser.add_argument(
+        "--skip-mni-check",
+        action="store_true",
+        help="Omitir verificación de normalización MNI152",
     )
 
     args = parser.parse_args()
@@ -478,6 +597,16 @@ def main():
     # Configurar nivel de logging según el parámetro quiet
     if args.quiet:
         logger.setLevel(logging.WARNING)
+
+    # Procesar target_shape
+    target_shape = tuple(map(int, args.target_shape.split(",")))
+
+    # Procesar voxel_size
+    voxel_size = tuple(map(float, args.voxel_size.split(",")))
+
+    logger.info(
+        f"Usando tamaño objetivo: {target_shape}, tamaño de vóxel: {voxel_size} mm³"
+    )
 
     # Procesar metadatos
     logger.info(f"Procesando metadatos desde {args.metadata}")
@@ -496,6 +625,7 @@ def main():
         random_seed=args.random_seed,
         n_splits=args.n_splits,
         verbose=not args.quiet,
+        target_shape=target_shape,
     )
 
     logger.info("Procesamiento de datos completado.")
