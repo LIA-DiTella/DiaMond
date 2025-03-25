@@ -481,13 +481,21 @@ def _get_norm_out(
 
 if __name__ == "__main__":
     cuda_id = 0
-    device = torch.device(f"cuda:{cuda_id}" if torch.cuda.is_available() else ("mps" if (torch.backends.mps.is_available() and torch.backends.mps.is_built()) else "cpu"))
+    device = torch.device(
+        f"cuda:{cuda_id}"
+        if torch.cuda.is_available()
+        else (
+            "mps"
+            if (torch.backends.mps.is_available() and torch.backends.mps.is_built())
+            else "cpu"
+        )
+    )
 
     batchSize = 100
     f = torch.rand([batchSize, 128]).to(device)
     g = torch.rand([batchSize, 16]).to(device)
     kwargs = {
-        "gpu": gpu,
+        "gpu": cuda_id,
         "f_num_channels": 128,
         "g_num_channels": 16,
         "f_layer_dim": [],
