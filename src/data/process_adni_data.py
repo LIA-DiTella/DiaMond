@@ -155,7 +155,12 @@ def create_h5_dataset(
                         else:
                             data = subject["mri_data"]
                             data = data.flatten()
-                            tmp_array = data[:128*128*128].reshape(128, 128, 128)
+                            
+                            if sum(data.shape) > 128**3:
+                                tmp_array = data[:128*128*128].reshape(128, 128, 128)
+                            else:
+                                cube_root = int(round(data.shape[0] ** (1. / 3)))
+                                tmp_array = data[:cube_root**3].reshape(cube_root, cube_root, cube_root)
 
                         subject["mri_data"] = tmp_array
 
@@ -169,7 +174,7 @@ def create_h5_dataset(
             if "PET" in modalities and has_pet:
 
                 if subject["pet_data"].shape != (128, 128, 128):
-                    if sum(subject["pet_data"].shape) / 128 == 128:
+                    if sum(subject["pet_data"].shape) / (128**2) == 128:
                         subject["pet_data"] = np.array(
                             subject["pet_data"], dtype=np.float32
                         ).reshape(128, 128, 128)
@@ -181,10 +186,13 @@ def create_h5_dataset(
                         else:
                             data = subject["pet_data"]
                             data = data.flatten()
-                            tmp_array = data[:128*128*128].reshape(128, 128, 128)
+                            if sum(data.shape) > 128**3:
+                                tmp_array = data[:128*128*128].reshape(128, 128, 128)
+                            else:
+                                cube_root = int(round(data.shape[0] ** (1. / 3)))
+                                tmp_array = data[:cube_root**3].reshape(cube_root, cube_root, cube_root)
 
                         subject["pet_data"] = tmp_array
-
 
                 pet_group = subject_group.create_group("PET/FDG")
                 pet_group.create_dataset(
