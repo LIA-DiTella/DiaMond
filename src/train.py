@@ -126,35 +126,35 @@ def get_output(
     (mri_data, pet_data), label = batch_data
 
     # Mover los tensores al dispositivo
-    mri_data = mri_data.to(device)
-    pet_data = pet_data.to(device)
-    label = label.to(device)
+    # mri_data = mri_data.to(device)
+    # pet_data = pet_data.to(device)
+    # label = label.to(device)
 
     # Verificar y ajustar las dimensiones de los tensores si es necesario
     # Imprimir los tamaños para depuración
-    print(f"MRI data shape: {mri_data.shape}")
-    print(f"PET data shape: {pet_data.shape}")
+    # print(f"MRI data shape: {mri_data.shape}")
+    # print(f"PET data shape: {pet_data.shape}")
 
     # Asegurarse de que los tensores tengan la forma correcta
-    if len(mri_data.shape) == 4:  # [batch, d, h, w]
-        mri_data = mri_data.unsqueeze(
-            1
-        )  # Añadir dimensión de canal [batch, channel, d, h, w]
+    # if len(mri_data.shape) == 4:  # [batch, d, h, w]
+    #     mri_data = mri_data.unsqueeze(
+    #         1
+    #     )  # Añadir dimensión de canal [batch, channel, d, h, w]
 
-    mri_data = mri_data[:, 0:1, :, :, :]  # Seleccionar solo un canal
+    # mri_data = mri_data[:, 0:1, :, :, :]  # Seleccionar solo un canal
 
-    # Corregir la forma del PET si tiene dimensiones incorrectas
-    if len(pet_data.shape) == 4:  # [batch, d, h, w]
-        pet_data = pet_data.unsqueeze(
-            1
-        )  # Añadir dimensión de canal [batch, channel, d, h, w]
+    # # Corregir la forma del PET si tiene dimensiones incorrectas
+    # if len(pet_data.shape) == 4:  # [batch, d, h, w]
+    #     pet_data = pet_data.unsqueeze(
+    #         1
+    #     )  # Añadir dimensión de canal [batch, channel, d, h, w]
 
-    # Tomar solo el primer canal si hay múltiples o reorganizar según se necesite
-    pet_data = pet_data[:, 0:1, :, :, :]  # Seleccionar solo un canal
+    # # Tomar solo el primer canal si hay múltiples o reorganizar según se necesite
+    # pet_data = pet_data[:, 0:1, :, :, :]  # Seleccionar solo un canal
 
     # Volver a verificar las formas después de ajustar
-    print(f"MRI data shape ajustada: {mri_data.shape}")
-    print(f"PET data shape ajustada: {pet_data.shape}")
+    # print(f"MRI data shape ajustada: {mri_data.shape}")
+    # print(f"PET data shape ajustada: {pet_data.shape}")
 
     # data = (mri_data, pet_data)
     if modality == "multi":
