@@ -134,20 +134,24 @@ def get_output(
     # Imprimir los tamaños para depuración
     print(f"MRI data shape: {mri_data.shape}")
     print(f"PET data shape: {pet_data.shape}")
-    
+
     # Asegurarse de que los tensores tengan la forma correcta
     if len(mri_data.shape) == 4:  # [batch, d, h, w]
-        mri_data = mri_data.unsqueeze(1)  # Añadir dimensión de canal [batch, channel, d, h, w]
-    
+        mri_data = mri_data.unsqueeze(
+            1
+        )  # Añadir dimensión de canal [batch, channel, d, h, w]
+
     mri_data = mri_data[:, 0:1, :, :, :]  # Seleccionar solo un canal
 
     # Corregir la forma del PET si tiene dimensiones incorrectas
     if len(pet_data.shape) == 4:  # [batch, d, h, w]
-        pet_data = pet_data.unsqueeze(1)  # Añadir dimensión de canal [batch, channel, d, h, w]
-    
+        pet_data = pet_data.unsqueeze(
+            1
+        )  # Añadir dimensión de canal [batch, channel, d, h, w]
+
     # Tomar solo el primer canal si hay múltiples o reorganizar según se necesite
     pet_data = pet_data[:, 0:1, :, :, :]  # Seleccionar solo un canal
-    
+
     # Volver a verificar las formas después de ajustar
     print(f"MRI data shape ajustada: {mri_data.shape}")
     print(f"PET data shape ajustada: {pet_data.shape}")
@@ -211,9 +215,9 @@ def train(
 
     if head is not None:
         # print RAM estimation for the head
-        print(
-            f"Head RAM estimation: {sum(p.numel() for p in head.parameters()) * 4 / 1024 / 1024} MB"
-        )
+        # print(
+        #     f"Head RAM estimation: {sum(p.numel() for p in head.parameters()) * 4 / 1024 / 1024} MB"
+        # )
 
         head.train()
 
@@ -553,10 +557,10 @@ def main():
     print(f"Device: {device} - Cuda Available: {torch.cuda.is_available()}")
 
     # Establecer método de inicio para multiprocessing
-    if torch.cuda.is_available():
+    # if torch.cuda.is_available():
         # Configurar el método de inicio correcto para CUDA y multiprocessing
-        torch.multiprocessing.set_start_method("spawn", force=True)
-        print("Establecido método de inicio 'spawn' para multiprocessing con CUDA")
+        # torch.multiprocessing.set_start_method("spawn", force=True)
+        # print("Establecido método de inicio 'spawn' para multiprocessing con CUDA")
 
     args = parse_args()
 
@@ -692,7 +696,7 @@ def main():
                 if torch.cuda.is_available()
                 else 12,  # Reducir workers con CUDA
                 drop_last=True,
-                collate_fn=custom_collate_fn,  # Añadir custom collate
+                # collate_fn=custom_collate_fn,  # Añadir custom collate
             )
             valid_loader = DataLoader(
                 dataset=valid_data,
@@ -702,7 +706,7 @@ def main():
                 if torch.cuda.is_available()
                 else 4,  # Reducir workers con CUDA
                 drop_last=False,
-                collate_fn=custom_collate_fn,  # Añadir custom collate
+                # collate_fn=custom_collate_fn,  # Añadir custom collate
             )
         else:
             split_test_path = f"{dataset_path}/{split}-test.h5"
@@ -721,7 +725,7 @@ def main():
                 num_workers=2
                 if torch.cuda.is_available()
                 else 4,  # Reducir workers con CUDA
-                collate_fn=custom_collate_fn,  # Añadir custom collate
+                # collate_fn=custom_collate_fn,  # Añadir custom collate
             )
 
         # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
