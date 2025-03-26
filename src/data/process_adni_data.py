@@ -148,8 +148,16 @@ def create_h5_dataset(
                             subject["mri_data"], dtype=np.float32
                         ).reshape(128, 128, 128)
                     else:
-                        print(f"Skipping subject {i}: {subject_id} - invalid MRI data shape")
-                        continue
+                        # Try resizing to 128x128x128
+                        tmp_array = np.zeros((128, 128, 128))
+                        if len(subject["mri_data"].shape) == 3:
+                            tmp_array[:subject["mri_data"].shape[0], :subject["mri_data"].shape[1], :subject["mri_data"].shape[2]] = subject["mri_data"]
+                        else:
+                            data = subject["mri_data"]
+                            data = data.flatten()
+                            tmp_array = data[:128*128*128].reshape(128, 128, 128)
+
+                        subject["mri_data"] = tmp_array
 
                 mri_group.create_dataset(
                     "data", data=subject["mri_data"], dtype=np.float32
@@ -166,8 +174,17 @@ def create_h5_dataset(
                             subject["pet_data"], dtype=np.float32
                         ).reshape(128, 128, 128)
                     else:
-                        print(f"Skipping subject {i}: {subject_id} - invalid PET data shape")
-                        continue
+                        # Crop PET data to 128x128x128
+                        tmp_array = np.zeros((128, 128, 128))
+                        if len(subject["pet_data"].shape) == 3:
+                            tmp_array[:subject["pet_data"].shape[0], :subject["pet_data"].shape[1], :subject["pet_data"].shape[2]] = subject["pet_data"]
+                        else:
+                            data = subject["pet_data"]
+                            data = data.flatten()
+                            tmp_array = data[:128*128*128].reshape(128, 128, 128)
+
+                        subject["pet_data"] = tmp_array
+
 
                 pet_group = subject_group.create_group("PET/FDG")
                 pet_group.create_dataset(
