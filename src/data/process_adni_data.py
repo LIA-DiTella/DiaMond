@@ -140,6 +140,13 @@ def create_h5_dataset(
             # Añadir datos de MRI si están disponibles
             if "MRI" in modalities and has_mri:
                 mri_group = subject_group.create_group("MRI/T1")
+                # Make subject["mri_data"] a numpy array of shape (128, 128, 128) if it aint
+
+                if subject["mri_data"].shape != (128, 128, 128):
+                    subject["mri_data"] = np.array(
+                        subject["mri_data"], dtype=np.float32
+                    ).reshape(128, 128, 128)
+
                 mri_group.create_dataset(
                     "data", data=subject["mri_data"], dtype=np.float32
                 )
@@ -148,6 +155,12 @@ def create_h5_dataset(
 
             # Añadir datos de PET si están disponibles
             if "PET" in modalities and has_pet:
+
+                if subject["pet_data"].shape != (128, 128, 128):
+                    subject["pet_data"] = np.array(
+                        subject["pet_data"], dtype=np.float32
+                    ).reshape(128, 128, 128)
+
                 pet_group = subject_group.create_group("PET/FDG")
                 pet_group.create_dataset(
                     "data", data=subject["pet_data"], dtype=np.float32
