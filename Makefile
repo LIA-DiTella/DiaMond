@@ -322,14 +322,14 @@ airflow-clean:
 	@rm -f $(HOME)/airflow/*.log
 	@rm -f $(HOME)/airflow/webserver_config.py
 	@rm -rf $(HOME)/airflow/logs/*
-	@echo "¿Deseas reinicializar la base de datos de Airflow? [y/N]: "
+	@echo "¿Deseas re-inicializar la base de datos de Airflow? [y/N]: "
 	@read -r REINIT && \
 	if [ "$$REINIT" = "y" ] || [ "$$REINIT" = "Y" ]; then \
 		export AIRFLOW_HOME=$(HOME)/airflow; \
-		echo "Reinicializando base de datos de Airflow..."; \
+		echo "Re-inicializando base de datos de Airflow..."; \
 		airflow db reset -y; \
 		airflow db init; \
-		echo "Base de datos reinicializada correctamente"; \
+		echo "Base de datos re-inicializada correctamente"; \
 	fi
 	@rm -rf $(HOME)/airflow
 	@echo "Limpieza de Airflow completada"
