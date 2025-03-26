@@ -143,9 +143,13 @@ def create_h5_dataset(
                 # Make subject["mri_data"] a numpy array of shape (128, 128, 128) if it aint
 
                 if subject["mri_data"].shape != (128, 128, 128):
-                    subject["mri_data"] = np.array(
-                        subject["mri_data"], dtype=np.float32
-                    ).reshape(128, 128, 128)
+                    if sum(subject["mri_data"].shape) / 128 == 128:
+                        subject["mri_data"] = np.array(
+                            subject["mri_data"], dtype=np.float32
+                        ).reshape(128, 128, 128)
+                    else:
+                        print(f"Skipping subject {i}: {subject_id} - invalid MRI data shape")
+                        continue
 
                 mri_group.create_dataset(
                     "data", data=subject["mri_data"], dtype=np.float32
@@ -157,9 +161,13 @@ def create_h5_dataset(
             if "PET" in modalities and has_pet:
 
                 if subject["pet_data"].shape != (128, 128, 128):
-                    subject["pet_data"] = np.array(
-                        subject["pet_data"], dtype=np.float32
-                    ).reshape(128, 128, 128)
+                    if sum(subject["pet_data"].shape) / 128 == 128:
+                        subject["pet_data"] = np.array(
+                            subject["pet_data"], dtype=np.float32
+                        ).reshape(128, 128, 128)
+                    else:
+                        print(f"Skipping subject {i}: {subject_id} - invalid PET data shape")
+                        continue
 
                 pet_group = subject_group.create_group("PET/FDG")
                 pet_group.create_dataset(
