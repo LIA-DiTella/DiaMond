@@ -126,9 +126,9 @@ def get_output(
     (mri_data, pet_data), label = batch_data
 
     # Mover los tensores al dispositivo
-    # mri_data = mri_data.to(device)
-    # pet_data = pet_data.to(device)
-    # label = label.to(device)
+    mri_data = mri_data.to(device)
+    pet_data = pet_data.to(device)
+    label = label.to(device)
 
     # Verificar y ajustar las dimensiones de los tensores si es necesario
     # Imprimir los tamaños para depuración
@@ -157,6 +157,7 @@ def get_output(
     # print(f"PET data shape ajustada: {pet_data.shape}")
 
     # data = (mri_data, pet_data)
+    
     if modality == "multi":
         try:
             output_pet = model_pet(pet_data)
