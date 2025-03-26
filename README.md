@@ -4,35 +4,38 @@ Official Pytorch Implementation of Paper - 💎 DiaMond: Dementia Diagnosis with
 
 [![Preprint](https://img.shields.io/badge/arXiv-2303.07717-b31b1b)](https://arxiv.org/abs/2410.23219)
 
-<p align="center">
-  <img src="img/arch.png" />
-</p>
+![DiaMond Architecture](img/arch.png)
 
 ## Installation
 
-1. Set up the environment:
+### 1. Set up the environment
+
 ```bash
 make env
 ```
 
-2. Activate the environment:
+### 2. Activate the environment
+
 ```bash
 conda activate diamond
 ```
 
 Note: If the environment already exists, it will not be recreated. To force update use:
+
 ```bash
 make env-update
 ```
 
 ## Data
 
-We used data from [Alzheimer's Disease Neuroimaging Initiative (ADNI)](https://adni.loni.usc.edu/) and [Japanese Alzheimer's Disease Neuroimaging Initiative (J-ADNI)](https://pubmed.ncbi.nlm.nih.gov/29753531/). 
+We used data from [Alzheimer's Disease Neuroimaging Initiative (ADNI)](https://adni.loni.usc.edu/) and [Japanese Alzheimer's Disease Neuroimaging Initiative (J-ADNI)](https://pubmed.ncbi.nlm.nih.gov/29753531/).
 
 To prepare the data:
 
 1. Download ADNI data manually and place in `data/raw/{train,val,test}` directories
+
 2. Run data processing:
+
 ```bash
 make data
 ```
@@ -41,23 +44,23 @@ Data for training, validation, and testing will be processed into separate [HDF5
 
 1. First level: A unique identifier, e.g. image ID.
 2. The second level always has the following entries:
-    1. A group named `MRI/T1`, containing the T1-weighted 3D MRI data.
-    2. A group named `PET/FDG`, containing the 3D FDG PET data.
-    3. A string attribute `DX` containing the diagnosis labels: `CN`, `Dementia/AD`, `FTD`, or `MCI`, if available.
-    4. A scalar attribute `RID` with the patient ID, if available.
+   1. A group named `MRI/T1`, containing the T1-weighted 3D MRI data.
+   2. A group named `PET/FDG`, containing the 3D FDG PET data.
+   3. A string attribute `DX` containing the diagnosis labels: `CN`, `Dementia/AD`, `FTD`, or `MCI`, if available.
+   4. A scalar attribute `RID` with the patient ID, if available.
 
 ## Usage
 
-The package uses [PyTorch](https://pytorch.org). To train and test DiaMond, execute the `src/train.py` script. 
+The package uses [PyTorch](https://pytorch.org). To train and test DiaMond, execute the `src/train.py` script.
 The configuration file of the command arguments is stored in `config/config.yaml`.
 The essential command line arguments are:
 
-  - `--dataset_path`: Path to HDF5 files containing either train, validation, or test data splits.
-  - `--img_size`: Size of the input scan.
-  - `--test`: *True* for model evaluation.
-
+- `--dataset_path`: Path to HDF5 files containing either train, validation, or test data splits.
+- `--img_size`: Size of the input scan.
+- `--test`: _True_ for model evaluation.
 
 After specifying the config file, simply start training/evaluation by:
+
 ```bash
 python src/train.py
 ```
