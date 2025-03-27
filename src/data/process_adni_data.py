@@ -160,7 +160,7 @@ def create_h5_dataset(
                                 tmp_array = data[:128*128*128].reshape(128, 128, 128)
                             else:
                                 cube_root = int(np.floor(data.shape[0] ** (1. / 3)))
-                                tmp_array = data[:cube_root**3].reshape(cube_root, cube_root, cube_root)
+                                tmp_array[0:cube_root, 0:cube_root, 0:cube_root] = data[:cube_root**3].reshape(cube_root, cube_root, cube_root)
 
                         subject["mri_data"] = tmp_array
 
@@ -190,7 +190,7 @@ def create_h5_dataset(
                                 tmp_array = data[:128*128*128].reshape(128, 128, 128)
                             else:
                                 cube_root = int(np.floor(data.shape[0] ** (1. / 3)))
-                                tmp_array = data[:cube_root**3].reshape(cube_root, cube_root, cube_root)
+                                tmp_array[0:cube_root, 0:cube_root, 0:cube_root] = data[:cube_root**3].reshape(cube_root, cube_root, cube_root)
 
                         subject["pet_data"] = tmp_array
 
