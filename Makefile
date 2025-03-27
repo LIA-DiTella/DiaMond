@@ -32,7 +32,7 @@ CONFIG ?= $(shell pwd)/config/config.yaml
 MODEL_DIR ?= $(shell pwd)/models
 IMG_SIZE ?= 128
 BATCH_SIZE ?= 8
-NUM_EPOCHS ?= 100
+NUM_EPOCHS ?= 3800
 LR ?= 0.001
 NUM_CLASSES ?= 3
 WANDB ?= 1
@@ -246,7 +246,7 @@ airflow-start:
 	@echo "Iniciando servidor web de Airflow..."
 	@export AIRFLOW_HOME=$(HOME)/airflow; 
 	@echo "Airflow path: $(HOME)/airflow"; \
-	airflow webserver -p 8080 -D
+	airflow webserver -p 8081
 
 airflow-scheduler:
 	@echo "Iniciando scheduler de Airflow..."
