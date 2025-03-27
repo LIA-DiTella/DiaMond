@@ -155,7 +155,7 @@ def create_h5_dataset(
                         else:
                             data = subject["mri_data"]
                             data = data.flatten()
-                            
+
                             if sum(data.shape) > 128**3:
                                 tmp_array = data[:128*128*128].reshape(128, 128, 128)
                             else:
@@ -163,7 +163,8 @@ def create_h5_dataset(
                                 tmp_array[0:cube_root, 0:cube_root, 0:cube_root] = data[:cube_root**3].reshape(cube_root, cube_root, cube_root)
 
                         subject["mri_data"] = tmp_array
-
+                
+                subject["mri_data"] = subject["mri_data"].unsqueeze(0)
                 mri_group.create_dataset(
                     "data", data=subject["mri_data"], dtype=np.float32
                 )
@@ -193,6 +194,8 @@ def create_h5_dataset(
                                 tmp_array[0:cube_root, 0:cube_root, 0:cube_root] = data[:cube_root**3].reshape(cube_root, cube_root, cube_root)
 
                         subject["pet_data"] = tmp_array
+
+                subject["pet_data"] = subject["pet_data"].unsqueeze(0)
 
                 pet_group = subject_group.create_group("PET/FDG")
                 pet_group.create_dataset(
