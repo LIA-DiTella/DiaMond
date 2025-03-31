@@ -7,12 +7,10 @@ env:
 		conda activate diamond; \
 	else \
 		echo "Creating new environment..."; \
-		conda create --name diamond python=3.12 --force && \
-		conda env update --file environment.yml --prune && \
+		conda create --name diamond python=3.12 --force 2>&1 | tee logs/conda_create.txt && \
+		conda env update --file environment.yml --prune 2>&1 | tee logs/conda_env_update.txt && \
 		conda activate diamond && \
-		python -m ipykernel install --user --name diamond --display-name "Python (diamond)" && \
-		make install && \
-		make install-dev && \
+		python -m ipykernel install --user --name diamond --display-name "Python (diamond)" --yes 2>&1 | tee logs/ipykernel_install.txt && \
 		echo "Environment created,"; \
 	fi
 
@@ -43,10 +41,10 @@ WANDB_ENTITY ?= pardo
 # Reglas para el procesamiento de datos
 
 install:
-	pip install -r requirements.txt
+	pip install -r requirements.txt 2>&1 | tee logs/requirements_install.txt
 
 install-dev:
-	pip install -r requirements-dev.txt
+	pip install -r requirements-dev.txt 2>&1 | tee logs/requirements_dev_install.txt
 
 test-unit:
 	@echo "Ejecutando pruebas unitarias..."
