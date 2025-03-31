@@ -7,7 +7,7 @@ env:
 		conda activate diamond; \
 	else \
 		echo "Creating new environment..."; \
-		conda create --name diamond python=3.12 --force 2>&1 | tee logs/conda_create.txt && \
+		conda create --name diamond python=3.12 --yes --force 2>&1 | tee logs/conda_create.txt && \
 		conda env update --file environment.yml --prune 2>&1 | tee logs/conda_env_update.txt && \
 		conda activate diamond && \
 		python -m ipykernel install --user --name diamond --display-name "Python (diamond)" --yes 2>&1 | tee logs/ipykernel_install.txt && \
