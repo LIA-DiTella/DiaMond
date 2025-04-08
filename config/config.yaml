@@ -25,7 +25,7 @@ lr: 0.001
 weight_decay: 0.00001
 optimizer: adamW
 scheduler: CosineAnnealingLR
-epochs: 3800
+epochs: 100
 warmup_steps: 10
 
 save: True
