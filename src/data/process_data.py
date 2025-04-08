@@ -335,24 +335,22 @@ def load_and_process_subjects(
     subjects = []
 
     for _, row in tqdm(
-        metadata.iterrows(), total=len(metadata), desc="Procesando sujetos"
+        metadata.iterrows(), total=len(metadata), desc="Processing subjects"
     ):
         subject_dict = {
             "rid": row["subject_id"],
             "diagnosis": row["diagnosis"],
         }
 
-        # Cargar MRI
+        # Load MRI
         if "mri_path" in row and pd.notna(row["mri_path"]):
             mri_path = os.path.join(data_dir, row["mri_path"])
             if os.path.exists(mri_path):
                 mri_data = load_nifti_file(mri_path, target_shape)
                 if mri_data is not None:
-                    # Para MRI, extraer mapas de densidad de materia gris
-                    mri_data = extract_gray_matter(mri_data)
                     subject_dict["mri_data"] = mri_data
 
-        # Cargar PET
+        # Load PET
         if "pet_path" in row and pd.notna(row["pet_path"]):
             pet_path = os.path.join(data_dir, row["pet_path"])
             if os.path.exists(pet_path):
@@ -360,9 +358,8 @@ def load_and_process_subjects(
                 if pet_data is not None:
                     subject_dict["pet_data"] = pet_data
 
-        # Solo incluir si tiene al menos una modalidad
-        if "mri_data" in subject_dict or "pet_data" in subject_dict:
-            subjects.append(subject_dict)
+        # Include all subjects, even if one modality is missing
+        subjects.append(subject_dict)
 
     return subjects
 
