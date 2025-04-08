@@ -122,48 +122,40 @@ def get_output(
     steps_per_epoch: int = -1,
     epoch_id: int = -1,
     is_training: bool = False,
+    train_with_probes: bool = False,  # New parameter to control probe usage
 ):
     (mri_data, pet_data), label = batch_data
 
-    # Mover los tensores al dispositivo
-    mri_data = mri_data.to(device)
-    pet_data = pet_data.to(device)
+    # Move tensors to the device
+    mri_data = mri_data.to(device) if mri_data is not None else None
+    pet_data = pet_data.to(device) if pet_data is not None else None
     label = label.to(device)
 
-    # Verificar y ajustar las dimensiones de los tensores si es necesario
-    # Imprimir los tamaños para depuración
-    # print(f"MRI data shape: {mri_data.shape}")
-    # print(f"PET data shape: {pet_data.shape}")
+    diamond = DiaMond()  # Assuming DiaMond instance is accessible
 
-    # Asegurarse de que los tensores tengan la forma correcta
-    # if len(mri_data.shape) == 4:  # [batch, d, h, w]
-    #     mri_data = mri_data.unsqueeze(
-    #         1
-    #     )  # Añadir dimensión de canal [batch, channel, d, h, w]
+    # Handle missing data based on train_with_probes
+    if not train_with_probes:
+        if mri_data is None or pet_data is None:
+            return None, None  # Skip this pair if probes are not used
 
-    # mri_data = mri_data[:, 0:1, :, :, :]  # Seleccionar solo un canal
+    # Use the MRI probe tensor if MRI data is missing
+    if mri_data is None:
+        probe_mri = diamond.probe_mri.to(device)
+        probe_mri_flat = probe_mri.view(probe_mri.size(0), -1)  # Flatten the probe
+        mri_data = diamond.probe_mri_linear(probe_mri_flat).unsqueeze(0)  # Pass through linear layer
 
-    # # Corregir la forma del PET si tiene dimensiones incorrectas
-    # if len(pet_data.shape) == 4:  # [batch, d, h, w]
-    #     pet_data = pet_data.unsqueeze(
-    #         1
-    #     )  # Añadir dimensión de canal [batch, channel, d, h, w]
+    # Use the PET probe tensor if PET data is missing
+    if pet_data is None:
+        probe_pet = diamond.probe_pet.to(device)
+        probe_pet_flat = probe_pet.view(probe_pet.size(0), -1)  # Flatten the probe
+        pet_data = diamond.probe_pet_linear(probe_pet_flat).unsqueeze(0)  # Pass through linear layer
 
-    # # Tomar solo el primer canal si hay múltiples o reorganizar según se necesite
-    # pet_data = pet_data[:, 0:1, :, :, :]  # Seleccionar solo un canal
-
-    # Volver a verificar las formas después de ajustar
-    # print(f"MRI data shape ajustada: {mri_data.shape}")
-    # print(f"PET data shape ajustada: {pet_data.shape}")
-
-    # data = (mri_data, pet_data)
-    
     if modality == "multi":
         try:
             output_pet = model_pet(pet_data)
             output_mri = model_mri(mri_data)
 
-            # apply late regbn
+            # Apply late regbn
             if is_training:
                 kwargs_regbn_train = {
                     "is_training": True,
@@ -181,8 +173,8 @@ def get_output(
 
             output = (output_pet + output_mri + output_mp) / 3
         except Exception as e:
-            print(f"Error en el procesamiento: {e}")
-            print(f"Shapes involucrados - MRI: {mri_data.shape}, PET: {pet_data.shape}")
+            print(f"Error in processing: {e}")
+            print(f"Shapes involved - MRI: {mri_data.shape}, PET: {pet_data.shape}")
             raise e
     else:
         raise ValueError(f"Modality {modality} not implemented")
@@ -242,6 +234,9 @@ def train(
             epoch_id=epoch_id,
             is_training=True,
         )
+        if output is None or label is None:
+            continue  # Skip this batch if output or label is None
+
         loss = (
             loss_fn(output.squeeze(1).float(), label.float())
             if num_classes == 2
@@ -314,6 +309,9 @@ def calculate_val_loss(
                 device,
                 modality,
             )
+            if output is None or label is None:
+                continue  # Skip this batch if output or label is None
+
             loss = (
                 loss_fn(output.squeeze(1).float(), label.float())
                 if num_classes == 2
@@ -401,6 +399,9 @@ def test(
                 device,
                 modality,
             )
+            if output is None or label is None:
+                continue  # Skip this batch if output or label is None
+
             loss = (
                 loss_fn(output.squeeze(1).float().to(device), label.float().to(device))
                 if num_classes == 2
@@ -1055,7 +1056,7 @@ def main():
                 f"test_f1: {np.mean(test_f1):.6f} +- {np.std(test_f1):.6f}, "
                 f"test_auc: {np.mean(test_auc):.6f} +- {np.std(test_auc):.6f}, cm: {cm}, "
                 f"test_precision: {np.mean(test_precision):.6f} +- {np.std(test_precision):.6f}, "
-                f"test_recall: {np.mean(test_recall)::.6f} +- {np.std(test_recall):.6f}\n\n"
+                f"test_recall: {np.mean(test_recall):.6f} +- {np.std(test_recall):.6f}\n\n"
             )
 
 
