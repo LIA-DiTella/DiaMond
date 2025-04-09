@@ -796,9 +796,11 @@ def main():
         )
 
         if not (wandb.config.test):
-            
-            pytorch_total_params = sum(p.numel() for p in model.parameters())
-            pytorch_total_train_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+            pytorch_total_params = sum(p.numel() for m in model for p in m.parameters())            
+            pytorch_total_train_params = sum(
+                p.numel() for m in model for p in m.parameters() if p.requires_grad
+            )
 
             if wandb.config.train_with_probes:
                 pytorch_total_params += diamond.probe_mri.numel() + diamond.probe_pet.numel()
