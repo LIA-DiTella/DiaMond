@@ -771,6 +771,16 @@ def main():
             for param in model[2].parameters():
                 param.requires_grad = True
 
+            for param in model[3]:
+                param.requires_grad = True
+            for param in model[4].parameters():
+                param.requires_grad = True
+
+            for param in model[5]:
+                param.requires_grad = True
+            for param in model[6].parameters():
+                param.requires_grad = True
+
             regbn_module = RegBN(**regbn_kwargs).to(device)
 
         else:
@@ -789,10 +799,16 @@ def main():
         )
 
         if not (wandb.config.test):
-            pytorch_total_params = sum(p.numel() for m in model for p in m.parameters())
-            pytorch_total_train_params = sum(
-                p.numel() for m in model for p in m.parameters() if p.requires_grad
+            # Filter out nn.Parameter objects when calculating total parameters
+            pytorch_total_params = sum(
+                p.numel() for m in model if hasattr(m, "parameters") for p in m.parameters()
             )
+            pytorch_total_train_params = sum(
+                p.numel() for m in model if hasattr(m, "parameters") for p in m.parameters() if p.requires_grad
+            )
+            # Add the parameters of nn.Parameter objects (probes)
+            pytorch_total_params += sum(p.numel() for p in model if isinstance(p, nn.Parameter))
+            pytorch_total_train_params += sum(p.numel() for p in model if isinstance(p, nn.Parameter))
             if head is not None:
                 pytorch_total_params += sum(p.numel() for p in head.parameters())
                 pytorch_total_train_params += sum(
