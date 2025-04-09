@@ -482,7 +482,7 @@ class DiaMond:
         model_mp = self.body(**kwargs)
 
         # Return models along with shared probes and their linear layers
-        return model_pet, model_mri, model_mp, self.probe_mri, self.probe_mri_linear, self.probe_pet, self.probe_pet_linear
+        return model_pet, model_mri, model_mp
 
     def body_mp(self, PATH_PET=None, PATH_MRI=None, **kwargs):
         kwargs["modality"] = "multi"

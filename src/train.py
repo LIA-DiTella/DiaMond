@@ -763,7 +763,7 @@ def main():
                 num_classes=wandb.config.class_num,
                 channels=wandb.config.in_chans,
             )
-
+            # model = model_pet, model_mri, model_mp, 
             for param in model[0].parameters():
                 param.requires_grad = True
             for param in model[1].parameters():
@@ -771,15 +771,12 @@ def main():
             for param in model[2].parameters():
                 param.requires_grad = True
 
-            for param in model[3]:
-                param.requires_grad = True
-            for param in model[4].parameters():
-                param.requires_grad = True
-
-            for param in model[5]:
-                param.requires_grad = True
-            for param in model[6].parameters():
-                param.requires_grad = True
+            if wandb.config.train_with_probes:
+                # Set requires_grad to True for the probes
+                diamond.probe_mri.requires_grad = False
+                diamond.probe_pet.requires_grad = False
+                diamond.probe_mri_linear.requires_grad = True
+                diamond.probe_pet_linear.requires_grad = True
 
             regbn_module = RegBN(**regbn_kwargs).to(device)
 
@@ -799,16 +796,21 @@ def main():
         )
 
         if not (wandb.config.test):
-            # Filter out nn.Parameter objects when calculating total parameters
-            pytorch_total_params = sum(
-                p.numel() for m in model if hasattr(m, "parameters") for p in m.parameters()
-            )
-            pytorch_total_train_params = sum(
-                p.numel() for m in model if hasattr(m, "parameters") for p in m.parameters() if p.requires_grad
-            )
-            # Add the parameters of nn.Parameter objects (probes)
-            pytorch_total_params += sum(p.numel() for p in model if isinstance(p, nn.Parameter))
-            pytorch_total_train_params += sum(p.numel() for p in model if isinstance(p, nn.Parameter))
+            
+            pytorch_total_params = sum(p.numel() for p in model.parameters())
+            pytorch_total_train_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+            if wandb.config.train_with_probes:
+                pytorch_total_params += diamond.probe_mri.numel() + diamond.probe_pet.numel()
+                
+                pytorch_total_train_params += sum(
+                    p.numel() for p in diamond.probe_mri_linear.parameters() if p.requires_grad
+                )
+                pytorch_total_train_params += sum(
+                    p.numel() for p in diamond.probe_pet_linear.parameters() if p.requires_grad
+                )
+                    
+
             if head is not None:
                 pytorch_total_params += sum(p.numel() for p in head.parameters())
                 pytorch_total_train_params += sum(
