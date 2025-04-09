@@ -39,3 +39,6 @@ wandb_entity: pardo
 wandb_name: DiaMond
 wandb_tags: [DiaMond, multi, split1]
 wandb_notes: "DiaMond multi split1"
+
+allow_incomplete_pairs: True
+train_with_probes: True

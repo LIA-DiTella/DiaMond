@@ -48,6 +48,7 @@ class AdniDataset(Dataset):
         out_class_num=3,
         with_mri=True,
         with_pet=True,
+        allow_incomplete_pairs=False,  # New parameter
     ):
         self.path = path
         self.is_training = is_training
@@ -57,6 +58,7 @@ class AdniDataset(Dataset):
         self.labels = []
         self.with_mri = with_mri
         self.with_pet = with_pet
+        self.allow_incomplete_pairs = allow_incomplete_pairs  # Store the parameter
 
         # Definir transformaciones para las imágenes
         self.transforms = []
@@ -86,12 +88,20 @@ class AdniDataset(Dataset):
 
                 print(f"has_mri: {has_mri}, has_pet: {has_pet}")
 
-                # Saltar si faltan modalidades requeridas
-                if (self.with_mri and not has_mri) or (self.with_pet and not has_pet):
-                    LOG.warning(
-                        f"Sujeto {name} no tiene todas las modalidades requeridas, saltando"
-                    )
-                    continue
+                # Saltar si faltan modalidades requeridas y no se permiten pares incompletos
+                if not self.allow_incomplete_pairs:
+                    if (self.with_mri and not has_mri) or (self.with_pet and not has_pet):
+                        LOG.warning(
+                            f"Sujeto {name} no tiene todas las modalidades requeridas, saltando"
+                        )
+                        continue
+                else:
+                    # Si se permiten pares incompletos, al menos una modalidad debe estar presente
+                    if not (has_mri or has_pet):
+                        LOG.warning(
+                            f"Sujeto {name} no tiene ninguna modalidad disponible, saltando"
+                        )
+                        continue
 
                 # Verificar diagnóstico
                 if "DX" not in group.attrs:
@@ -111,23 +121,23 @@ class AdniDataset(Dataset):
                     continue
 
                 # Cargar datos de imagen según modalidades requeridas
-                print(group)
-                if self.with_mri and self.with_pet:
+                if self.with_mri and has_mri and self.with_pet and has_pet:
                     mri_data = group["MRI/T1/data"][:]
                     pet_data = group["PET/FDG/data"][:]
                     pet_data = np.nan_to_num(pet_data, copy=False)
-
                     image_data.append((mri_data, pet_data))
-                elif self.with_mri:
+                elif self.with_mri and has_mri:
                     mri_data = group["MRI/T1/data"][:]
                     image_data.append(mri_data)
-                elif self.with_pet:
+                elif self.with_pet and has_pet:
                     pet_data = group["PET/FDG/data"][:]
                     pet_data = np.nan_to_num(pet_data, copy=False)
                     image_data.append(pet_data)
                 else:
-                    LOG.warning("No se han definido modalidades para cargar")
-                    raise ValueError("No se han definido modalidades para cargar")
+                    LOG.warning(
+                        f"Sujeto {name} no tiene modalidades válidas según la configuración, saltando"
+                    )
+                    continue
 
                 diagnosis.append(dx)
                 rid.append(group.attrs.get("RID", name))  # Usar nombre como fallback

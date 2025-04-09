@@ -198,6 +198,7 @@ def train(
     loss_fn=nn.BCEWithLogitsLoss(),
     modality=None,
     epoch_id: int = None,
+    train_with_probes: bool = False,  # New parameter to control probe usage
 ):
     model_pet, model_mri, model_mp = model
     model_pet, model_mri, model_mp = (
@@ -233,6 +234,7 @@ def train(
             steps_per_epoch=steps_per_epoch,
             epoch_id=epoch_id,
             is_training=True,
+            train_with_probes=train_with_probes,
         )
         if output is None or label is None:
             continue  # Skip this batch if output or label is None
@@ -678,6 +680,7 @@ def main():
                 out_class_num=wandb.config.class_num,
                 with_mri=wandb.config.with_mri,
                 with_pet=wandb.config.with_pet,
+                allow_incomplete_pairs=wandb.config.get("allow_incomplete_pairs", False),  # Added parameter
             )
 
             split_valid_path = f"{dataset_path}/{split}-valid.h5"
@@ -688,6 +691,7 @@ def main():
                 out_class_num=wandb.config.class_num,
                 with_mri=wandb.config.with_mri,
                 with_pet=wandb.config.with_pet,
+                allow_incomplete_pairs=wandb.config.get("allow_incomplete_pairs", False),  # Added parameter
             )
 
             train_loader = DataLoader(
@@ -719,6 +723,7 @@ def main():
                 out_class_num=wandb.config.class_num,
                 with_mri=wandb.config.with_mri,
                 with_pet=wandb.config.with_pet,
+                allow_incomplete_pairs=wandb.config.get("allow_incomplete_pairs", False),  # Added parameter
             )
             test_loader = DataLoader(
                 dataset=test_data,
@@ -885,6 +890,7 @@ def main():
                     loss_fn,
                     modality=wandb.config.modality,
                     epoch_id=epoch,
+                    train_with_probes=wandb.config.train_with_probes,  # New parameter
                 )
                 print(optimizer.param_groups[0]["lr"])
 
