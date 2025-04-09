@@ -178,39 +178,43 @@ class AdniDataset(Dataset):
         label = self._diagnosis[index]
         scans = self._image_data[index]
 
-        # Dynamically adjust transformations based on available modalities
+        # Ajustar transformaciones dinámicamente según las modalidades disponibles
         available_transforms = []
         if self.with_mri and isinstance(scans, tuple) and len(scans) > 0:
             available_transforms.append(self.transforms[0])
         if self.with_pet and isinstance(scans, tuple) and len(scans) > 1:
             available_transforms.append(self.transforms[1])
 
-        assert len(scans) == len(available_transforms), (
-            f"Número de scans ({len(scans)}) no coincide con transformaciones ({len(available_transforms)})"
-        )
+        # Asegurarse de que las transformaciones coincidan con las modalidades disponibles
+        if isinstance(scans, tuple):
+            assert len(scans) == len(available_transforms), (
+                f"Número de scans ({len(scans)}) no coincide con transformaciones ({len(available_transforms)})"
+            )
 
-        if self.with_mri is True and self.with_pet is True:
+        # Procesar las modalidades disponibles
+        if isinstance(scans, tuple):
             sample = []
             for scan, transform in zip(scans, available_transforms):
-                # Ensure the tensor has the correct shape for torchio (C, H, W, D)
+                # Asegurar que el tensor tiene la forma correcta para torchio (C, H, W, D)
                 if scan.ndim == 5 and scan.shape[0] == 1:
                     scan = scan[0]
 
-                # Apply transformation and convert to tensor if necessary
+                # Aplicar transformación y convertir a tensor si es necesario
                 transformed = transform(scan)
                 if not isinstance(transformed, torch.Tensor):
                     transformed = torch.from_numpy(transformed)
                 sample.append(transformed)
 
             sample = tuple(sample)
-        elif self.with_mri is True or self.with_pet is True:
-            # Ensure the tensor has the correct shape for torchio (C, H, W, D)
+        else:
+            # Caso en el que solo hay una modalidad
+            transform = available_transforms[0]
             if scans.ndim == 5 and scans.shape[0] == 1:
                 scans = scans[0]
 
-            # Apply transformation and convert to tensor if necessary
-            sample = available_transforms[0](scans)
-            if not isinstance(sample, torch.Tensor):
-                sample = torch.from_numpy(sample)
+            transformed = transform(scans)
+            if not isinstance(transformed, torch.Tensor):
+                transformed = torch.from_numpy(transformed)
+            sample = transformed
 
         return sample, label
