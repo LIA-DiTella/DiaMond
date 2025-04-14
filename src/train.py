@@ -123,15 +123,20 @@ def get_output(
     epoch_id: int = -1,
     is_training: bool = False,
     train_with_probes: bool = False,  # New parameter to control probe usage
-):
+):  
+
     (mri_data, pet_data), label = batch_data
+
+    # Asegúrate de que los tensores tienen el tamaño esperado
+    # assert mri_data.shape[2:] == (128, 128, 128), f"Unexpected MRI shape: {mri_data.shape}"
+    # assert pet_data.shape[2:] == (128, 128, 128), f"Unexpected PET shape: {pet_data.shape}"
 
     # Move tensors to the device
     mri_data = mri_data.to(device) if mri_data is not None else None
     pet_data = pet_data.to(device) if pet_data is not None else None
     label = label.to(device)
 
-    diamond = DiaMond()  # Assuming DiaMond instance is accessible
+    # diamond = DiaMond()  # Assuming DiaMond instance is accessible
 
     # Handle missing data based on train_with_probes
     if not train_with_probes:
@@ -139,16 +144,16 @@ def get_output(
             return None, None  # Skip this pair if probes are not used
 
     # Use the MRI probe tensor if MRI data is missing
-    if mri_data is None:
-        probe_mri = diamond.probe_mri.to(device)
-        probe_mri_flat = probe_mri.view(probe_mri.size(0), -1)  # Flatten the probe
-        mri_data = diamond.probe_mri_linear(probe_mri_flat).unsqueeze(0)  # Pass through linear layer
+    # if mri_data is None:
+    #     probe_mri = diamond.probe_mri.to(device)
+    #     probe_mri_flat = probe_mri.view(probe_mri.size(0), -1)  # Flatten the probe
+    #     mri_data = diamond.probe_mri_linear(probe_mri_flat).unsqueeze(0)  # Pass through linear layer
 
-    # Use the PET probe tensor if PET data is missing
-    if pet_data is None:
-        probe_pet = diamond.probe_pet.to(device)
-        probe_pet_flat = probe_pet.view(probe_pet.size(0), -1)  # Flatten the probe
-        pet_data = diamond.probe_pet_linear(probe_pet_flat).unsqueeze(0)  # Pass through linear layer
+    # # Use the PET probe tensor if PET data is missing
+    # if pet_data is None:
+    #     probe_pet = diamond.probe_pet.to(device)
+    #     probe_pet_flat = probe_pet.view(probe_pet.size(0), -1)  # Flatten the probe
+    #     pet_data = diamond.probe_pet_linear(probe_pet_flat).unsqueeze(0)  # Pass through linear layer
 
     if modality == "multi":
         try:
@@ -489,71 +494,71 @@ def test(
 
 
 # Modifica la función custom_collate_fn para normalizar los tensores
-def custom_collate_fn(batch):
-    """
-    Custom collate function to normalize tensors to the same size.
-    """
-    if not batch:
-        return None
+# def custom_collate_fn(batch):
+#     """
+#     Custom collate function to normalize tensors to the same size.
+#     """
+#     if not batch:
+#         return None
 
-    mri_batch = []
-    pet_batch = []
-    labels = []
+#     mri_batch = []
+#     pet_batch = []
+#     labels = []
 
-    # Primero, recopilamos todos los tensores válidos
-    for data in batch:
-        try:
-            (mri, pet), label = data
-            mri_batch.append(mri)
-            pet_batch.append(pet)
-            labels.append(label)
-        except Exception as e:
-            print(f"Error en el formato de los datos: {e}")
-            continue
+#     # Primero, recopilamos todos los tensores válidos
+#     for data in batch:
+#         try:
+#             (mri, pet), label = data
+#             mri_batch.append(mri)
+#             pet_batch.append(pet)
+#             labels.append(label)
+#         except Exception as e:
+#             print(f"Error en el formato de los datos: {e}")
+#             continue
 
-    # Verificamos que tengamos datos para procesar
-    if not mri_batch or not pet_batch or not labels:
-        raise RuntimeError("No hay datos válidos en el lote")
+#     # Verificamos que tengamos datos para procesar
+#     if not mri_batch or not pet_batch or not labels:
+#         raise RuntimeError("No hay datos válidos en el lote")
 
-    # Determinar el tamaño común para los tensores MRI y PET
-    # Podemos usar el tamaño más pequeño de todos los tensores como referencia
-    mri_shapes = [m.shape for m in mri_batch]
-    pet_shapes = [p.shape for p in pet_batch]
+#     # Determinar el tamaño común para los tensores MRI y PET
+#     # Podemos usar el tamaño más pequeño de todos los tensores como referencia
+#     mri_shapes = [m.shape for m in mri_batch]
+#     pet_shapes = [p.shape for p in pet_batch]
 
-    # Calculamos la forma mínima para cada dimensión
-    min_mri_shape = tuple(min(dim) for dim in zip(*mri_shapes))
-    min_pet_shape = tuple(min(dim) for dim in zip(*pet_shapes))
+#     # Calculamos la forma mínima para cada dimensión
+#     min_mri_shape = tuple(min(dim) for dim in zip(*mri_shapes))
+#     min_pet_shape = tuple(min(dim) for dim in zip(*pet_shapes))
 
-    # Recortamos todos los tensores al tamaño mínimo si es necesario
-    if any(shape != min_mri_shape for shape in mri_shapes):
-        print(f"Normalizando tensores MRI al tamaño: {min_mri_shape}")
-        mri_batch_normalized = []
-        for m in mri_batch:
-            slices = tuple(slice(0, s) for s in min_mri_shape)
-            mri_batch_normalized.append(m[slices])
-        mri_batch = mri_batch_normalized
+#     # Recortamos todos los tensores al tamaño mínimo si es necesario
+#     if any(shape != min_mri_shape for shape in mri_shapes):
+#         print(f"Normalizando tensores MRI al tamaño: {min_mri_shape}")
+#         mri_batch_normalized = []
+#         for m in mri_batch:
+#             slices = tuple(slice(0, s) for s in min_mri_shape)
+#             mri_batch_normalized.append(m[slices])
+#         mri_batch = mri_batch_normalized
 
-    if any(shape != min_pet_shape for shape in pet_shapes):
-        print(f"Normalizando tensores PET al tamaño: {min_pet_shape}")
-        pet_batch_normalized = []
-        for p in pet_batch:
-            slices = tuple(slice(0, s) for s in min_pet_shape)
-            pet_batch_normalized.append(p[slices])
-        pet_batch = pet_batch_normalized
+#     if any(shape != min_pet_shape for shape in pet_shapes):
+#         print(f"Normalizando tensores PET al tamaño: {min_pet_shape}")
+#         pet_batch_normalized = []
+#         for p in pet_batch:
+#             slices = tuple(slice(0, s) for s in min_pet_shape)
+#             pet_batch_normalized.append(p[slices])
+#         pet_batch = pet_batch_normalized
 
-    # Imprimir información adicional para depuración
-    print(f"Forma final de MRI después de normalizar: {mri_batch[0].shape}")
-    print(f"Forma final de PET después de normalizar: {pet_batch[0].shape}")
+#     # Imprimir información adicional para depuración
+#     print(f"Forma final de MRI después de normalizar: {mri_batch[0].shape}")
+#     print(f"Forma final de PET después de normalizar: {pet_batch[0].shape}")
 
-    # Convertir a tensor sin moverlos a la GPU
-    mri_tensor = torch.stack(mri_batch, 0)
-    pet_tensor = torch.stack(pet_batch, 0)
+#     # Convertir a tensor sin moverlos a la GPU
+#     mri_tensor = torch.stack(mri_batch, 0)
+#     pet_tensor = torch.stack(pet_batch, 0)
 
-    # Convertir etiquetas a tensor
-    labels_tensor = torch.tensor(labels)
+#     # Convertir etiquetas a tensor
+#     labels_tensor = torch.tensor(labels)
 
-    # No mover a GPU aquí, lo haremos en get_output
-    return (mri_tensor, pet_tensor), labels_tensor
+#     # No mover a GPU aquí, lo haremos en get_output
+#     return (mri_tensor, pet_tensor), labels_tensor
 
 
 def main():

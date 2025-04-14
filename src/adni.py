@@ -128,11 +128,17 @@ class AdniDataset(Dataset):
                     image_data.append((mri_data, pet_data))
                 elif self.with_mri and has_mri:
                     mri_data = group["MRI/T1/data"][:]
-                    image_data.append(mri_data)
+                    if (self.allow_incomplete_pairs):
+                        image_data.append((mri_data, torch.zeros(mri_data.shape, dtype=torch.float32)))
+                    else:
+                        image_data.append(mri_data)
                 elif self.with_pet and has_pet:
                     pet_data = group["PET/FDG/data"][:]
                     pet_data = np.nan_to_num(pet_data, copy=False)
-                    image_data.append(pet_data)
+                    if (self.allow_incomplete_pairs):
+                        image_data.append((torch.zeros(pet_data.shape, dtype=torch.float32), pet_data))
+                    else:
+                        image_data.append(pet_data)
                 else:
                     LOG.warning(
                         f"Sujeto {name} no tiene modalidades válidas según la configuración, saltando"
@@ -156,6 +162,17 @@ class AdniDataset(Dataset):
         LOG.info("Classes: %s", pd.Series(counts, index=labels))
 
         print("Classes: ", pd.Series(counts, index=labels))
+        
+        # Make sure image_data is tensor
+        for i in range(len(image_data)):
+            if isinstance(image_data[i], tuple):
+                image_data[i] = tuple(
+                    torch.tensor(data, dtype=torch.float32) for data in image_data[i]
+                )
+            else:
+                image_data[i] = torch.tensor(image_data[i], dtype=torch.float32)
+        # Convertir a tensor
+        # image_data = torch.tensor(image_data, dtype=torch.float32)
 
         self._image_data = image_data
 
@@ -177,44 +194,22 @@ class AdniDataset(Dataset):
     def __getitem__(self, index: int):
         label = self._diagnosis[index]
         scans = self._image_data[index]
+        # empty = torch.ones(1, 1, 128, 128, 128)  # Tensor vacío para datos faltantes
 
-        # Ajustar transformaciones dinámicamente según las modalidades disponibles
-        available_transforms = []
-        if self.with_mri and isinstance(scans, tuple) and len(scans) > 0:
-            available_transforms.append(self.transforms[0])
-        if self.with_pet and isinstance(scans, tuple) and len(scans) > 1:
-            available_transforms.append(self.transforms[1])
+        if len(scans) == 0:
+            raise ValueError(f"No scans found for index {index}")
 
-        # Asegurarse de que las transformaciones coincidan con las modalidades disponibles
-        if isinstance(scans, tuple):
-            assert len(scans) == len(available_transforms), (
-                f"Número de scans ({len(scans)}) no coincide con transformaciones ({len(available_transforms)})"
-            )
+        # if self.with_mri is True and self.with_pet is True:
+        #     sample = []
+        #     for scan, transform in zip(scans, self.transforms):
+        #         sample.append(transform(scan))
+        #     sample = tuple(sample)
+            
+        # elif self.with_mri is True or self.with_pet is True:
+        #     sample = self.transforms[0](scans)
 
-        # Procesar las modalidades disponibles
-        if isinstance(scans, tuple):
-            sample = []
-            for scan, transform in zip(scans, available_transforms):
-                # Asegurar que el tensor tiene la forma correcta para torchio (C, H, W, D)
-                if scan.ndim == 5 and scan.shape[0] == 1:
-                    scan = scan[0]
-
-                # Aplicar transformación y convertir a tensor si es necesario
-                transformed = transform(scan)
-                if not isinstance(transformed, torch.Tensor):
-                    transformed = torch.from_numpy(transformed)
-                sample.append(transformed)
-
-            sample = tuple(sample)
-        else:
-            # Caso en el que solo hay una modalidad
-            transform = available_transforms[0]
-            if scans.ndim == 5 and scans.shape[0] == 1:
-                scans = scans[0]
-
-            transformed = transform(scans)
-            if not isinstance(transformed, torch.Tensor):
-                transformed = torch.from_numpy(transformed)
-            sample = transformed
+        sample = tuple(
+            transform(scan) if transform else scan for scan, transform in zip(scans, self.transforms)
+        )
 
         return sample, label
