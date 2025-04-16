@@ -5,6 +5,7 @@ import pandas as pd
 import torchio as tio
 import monai.transforms as montrans
 import logging
+from torch import nn
 
 from torch.utils.data import Dataset
 
@@ -49,6 +50,9 @@ class AdniDataset(Dataset):
         with_mri=True,
         with_pet=True,
         allow_incomplete_pairs=False,  # New parameter
+        trained_mri_probe=None,
+        trained_pet_probe=None,
+        imputing_method="probes",
     ):
         self.path = path
         self.is_training = is_training
@@ -59,6 +63,7 @@ class AdniDataset(Dataset):
         self.with_mri = with_mri
         self.with_pet = with_pet
         self.allow_incomplete_pairs = allow_incomplete_pairs  # Store the parameter
+        self.imputing_method = imputing_method
 
         # Definir transformaciones para las imágenes
         self.transforms = []
@@ -66,6 +71,34 @@ class AdniDataset(Dataset):
             self.transforms.append(get_image_transform(is_training))
         if with_pet:
             self.transforms.append(get_image_transform(is_training))
+
+        self.blank_shape = (1, 128, 128, 128)
+
+        if self.allow_incomplete_pairs:
+            if self.is_training:
+                if self.imputing_method == "probes":
+                    self.pet_probe = nn.Parameter(
+                        torch.zeros(self.blank_shape, dtype=torch.float32),
+                        requires_grad=True,
+                    )
+                    self.mri_probe = nn.Parameter(
+                        torch.zeros(self.blank_shape, dtype=torch.float32),
+                        requires_grad=True,
+                    )
+            else:
+                if self.imputing_method == "probes":
+                    self.pet_probe = trained_pet_probe
+                    self.mri_probe = trained_mri_probe
+
+                    self.pet_probe.requires_grad = False
+                    self.mri_probe.requires_grad = False
+
+            if self.imputing_method == "instance":
+                self.pet_empty = torch.zeros(self.blank_shape, dtype=torch.float32)
+                self.mri_empty = torch.zeros(self.blank_shape, dtype=torch.float32)
+        else:
+            self.pet_probe = None
+            self.mri_probe = None
 
         self._load()
 
@@ -90,7 +123,9 @@ class AdniDataset(Dataset):
 
                 # Saltar si faltan modalidades requeridas y no se permiten pares incompletos
                 if not self.allow_incomplete_pairs:
-                    if (self.with_mri and not has_mri) or (self.with_pet and not has_pet):
+                    if (self.with_mri and not has_mri) or (
+                        self.with_pet and not has_pet
+                    ):
                         LOG.warning(
                             f"Sujeto {name} no tiene todas las modalidades requeridas, saltando"
                         )
@@ -128,15 +163,30 @@ class AdniDataset(Dataset):
                     image_data.append((mri_data, pet_data))
                 elif self.with_mri and has_mri:
                     mri_data = group["MRI/T1/data"][:]
-                    if (self.allow_incomplete_pairs):
-                        image_data.append((mri_data, torch.zeros(mri_data.shape, dtype=torch.float32)))
+                    if self.allow_incomplete_pairs:
+                        # print(f"MRI DATA SHAPE: {mri_data.shape}")
+
+                        # empty_pet = torch.zeros(self.blank_shape, dtype=torch.float32)
+
+                        if self.imputing_method == "instance":
+                            empty_pet = self.pet_empty
+                        elif self.imputing_method == "probes":
+                            empty_pet = self.pet_probe
+
+                        image_data.append((mri_data, empty_pet))
                     else:
                         image_data.append(mri_data)
                 elif self.with_pet and has_pet:
                     pet_data = group["PET/FDG/data"][:]
                     pet_data = np.nan_to_num(pet_data, copy=False)
-                    if (self.allow_incomplete_pairs):
-                        image_data.append((torch.zeros(pet_data.shape, dtype=torch.float32), pet_data))
+                    if self.allow_incomplete_pairs:
+                        # empty_mri = torch.zeros(self.blank_shape, dtype=torch.float32)
+                        # empty_mri = self.mri_probe
+                        if self.imputing_method == "instance":
+                            empty_mri = self.mri_empty
+                        elif self.imputing_method == "probes":
+                            empty_mri = self.mri_probe
+                        image_data.append((empty_mri, pet_data))
                     else:
                         image_data.append(pet_data)
                 else:
@@ -162,7 +212,7 @@ class AdniDataset(Dataset):
         LOG.info("Classes: %s", pd.Series(counts, index=labels))
 
         print("Classes: ", pd.Series(counts, index=labels))
-        
+
         # Make sure image_data is tensor
         for i in range(len(image_data)):
             if isinstance(image_data[i], tuple):
@@ -204,12 +254,19 @@ class AdniDataset(Dataset):
         #     for scan, transform in zip(scans, self.transforms):
         #         sample.append(transform(scan))
         #     sample = tuple(sample)
-            
+
         # elif self.with_mri is True or self.with_pet is True:
         #     sample = self.transforms[0](scans)
 
         sample = tuple(
-            transform(scan) if transform else scan for scan, transform in zip(scans, self.transforms)
+            transform(scan) if transform else scan
+            for scan, transform in zip(scans, self.transforms)
         )
 
         return sample, label
+
+    def get_probes(self):
+        """
+        Devuelve los probes de MRI y PET.
+        """
+        return self.mri_probe, self.pet_probe

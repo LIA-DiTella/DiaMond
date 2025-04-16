@@ -151,16 +151,24 @@ def create_h5_dataset(
                         # Try resizing to 128x128x128
                         tmp_array = np.zeros((128, 128, 128))
                         if len(subject["mri_data"].shape) == 3:
-                            tmp_array[:subject["mri_data"].shape[0], :subject["mri_data"].shape[1], :subject["mri_data"].shape[2]] = subject["mri_data"]
+                            tmp_array[
+                                : subject["mri_data"].shape[0],
+                                : subject["mri_data"].shape[1],
+                                : subject["mri_data"].shape[2],
+                            ] = subject["mri_data"]
                         else:
                             data = subject["mri_data"]
                             data = data.flatten()
 
                             if sum(data.shape) > 128**3:
-                                tmp_array = data[:128*128*128].reshape(128, 128, 128)
+                                tmp_array = data[: 128 * 128 * 128].reshape(
+                                    128, 128, 128
+                                )
                             else:
-                                cube_root = int(np.floor(data.shape[0] ** (1. / 3)))
-                                tmp_array[0:cube_root, 0:cube_root, 0:cube_root] = data[:cube_root**3].reshape(cube_root, cube_root, cube_root)
+                                cube_root = int(np.floor(data.shape[0] ** (1.0 / 3)))
+                                tmp_array[0:cube_root, 0:cube_root, 0:cube_root] = data[
+                                    : cube_root**3
+                                ].reshape(cube_root, cube_root, cube_root)
 
                         subject["mri_data"] = tmp_array
 
@@ -176,7 +184,6 @@ def create_h5_dataset(
 
             # Añadir datos de PET si están disponibles
             if "PET" in modalities and has_pet:
-
                 if subject["pet_data"].shape != (128, 128, 128):
                     if sum(subject["pet_data"].shape) / (128**2) == 128:
                         subject["pet_data"] = np.array(
@@ -186,15 +193,23 @@ def create_h5_dataset(
                         # Crop PET data to 128x128x128
                         tmp_array = np.zeros((128, 128, 128))
                         if len(subject["pet_data"].shape) == 3:
-                            tmp_array[:subject["pet_data"].shape[0], :subject["pet_data"].shape[1], :subject["pet_data"].shape[2]] = subject["pet_data"]
+                            tmp_array[
+                                : subject["pet_data"].shape[0],
+                                : subject["pet_data"].shape[1],
+                                : subject["pet_data"].shape[2],
+                            ] = subject["pet_data"]
                         else:
                             data = subject["pet_data"]
                             data = data.flatten()
                             if sum(data.shape) > 128**3:
-                                tmp_array = data[:128*128*128].reshape(128, 128, 128)
+                                tmp_array = data[: 128 * 128 * 128].reshape(
+                                    128, 128, 128
+                                )
                             else:
-                                cube_root = int(np.floor(data.shape[0] ** (1. / 3)))
-                                tmp_array[0:cube_root, 0:cube_root, 0:cube_root] = data[:cube_root**3].reshape(cube_root, cube_root, cube_root)
+                                cube_root = int(np.floor(data.shape[0] ** (1.0 / 3)))
+                                tmp_array[0:cube_root, 0:cube_root, 0:cube_root] = data[
+                                    : cube_root**3
+                                ].reshape(cube_root, cube_root, cube_root)
 
                         subject["pet_data"] = tmp_array
 

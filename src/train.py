@@ -123,8 +123,7 @@ def get_output(
     epoch_id: int = -1,
     is_training: bool = False,
     train_with_probes: bool = False,  # New parameter to control probe usage
-):  
-
+):
     (mri_data, pet_data), label = batch_data
 
     # Asegúrate de que los tensores tienen el tamaño esperado
@@ -561,15 +560,35 @@ def test(
 #     return (mri_tensor, pet_tensor), labels_tensor
 
 
+def load_trained_probes(path=None):
+    """
+    Cargar los probes entrenados desde un archivo.
+    """
+    if path is None:
+        path = "trained_probes.pt"
+    try:
+        trained_probes = torch.load(path)
+        mri_probe = trained_probes["mri_probe"]
+        pet_probe = trained_probes["pet_probe"]
+        print("Cargados los probes entrenados")
+        return mri_probe, pet_probe
+    except FileNotFoundError:
+        print(f"Archivo no encontrado: {path}")
+        raise
+    except Exception as e:
+        print(f"Error al cargar los probes: {e}")
+        raise
+
+
 def main():
     print(f"Torch: {torch.__version__}")
     print(f"Device: {device} - Cuda Available: {torch.cuda.is_available()}")
 
     # Establecer método de inicio para multiprocessing
     # if torch.cuda.is_available():
-        # Configurar el método de inicio correcto para CUDA y multiprocessing
-        # torch.multiprocessing.set_start_method("spawn", force=True)
-        # print("Establecido método de inicio 'spawn' para multiprocessing con CUDA")
+    # Configurar el método de inicio correcto para CUDA y multiprocessing
+    # torch.multiprocessing.set_start_method("spawn", force=True)
+    # print("Establecido método de inicio 'spawn' para multiprocessing con CUDA")
 
     args = parse_args()
 
@@ -685,8 +704,15 @@ def main():
                 out_class_num=wandb.config.class_num,
                 with_mri=wandb.config.with_mri,
                 with_pet=wandb.config.with_pet,
-                allow_incomplete_pairs=wandb.config.get("allow_incomplete_pairs", False),  # Added parameter
+                allow_incomplete_pairs=wandb.config.get(
+                    "allow_incomplete_pairs", False
+                ),  # Added parameter
+                imputing_method=(
+                    "probes" if wandb.config.train_with_probes else "instance"
+                ),
             )
+
+            mri_probe, pet_probe = train_data.get_probes()
 
             split_valid_path = f"{dataset_path}/{split}-valid.h5"
             print(f"Loading validation data from: {split_valid_path}")
@@ -696,7 +722,14 @@ def main():
                 out_class_num=wandb.config.class_num,
                 with_mri=wandb.config.with_mri,
                 with_pet=wandb.config.with_pet,
-                allow_incomplete_pairs=wandb.config.get("allow_incomplete_pairs", False),  # Added parameter
+                allow_incomplete_pairs=wandb.config.get(
+                    "allow_incomplete_pairs", False
+                ),  # Added parameter
+                trained_mri_probe=mri_probe,
+                trained_pet_probe=pet_probe,
+                imputing_method=(
+                    "probes" if wandb.config.train_with_probes else "instance"
+                ),
             )
 
             train_loader = DataLoader(
@@ -728,7 +761,14 @@ def main():
                 out_class_num=wandb.config.class_num,
                 with_mri=wandb.config.with_mri,
                 with_pet=wandb.config.with_pet,
-                allow_incomplete_pairs=wandb.config.get("allow_incomplete_pairs", False),  # Added parameter
+                allow_incomplete_pairs=wandb.config.get(
+                    "allow_incomplete_pairs", False
+                ),  # Added parameter
+                trained_mri_probe=mri_probe,
+                trained_pet_probe=pet_probe,
+                imputing_method=(
+                    "probes" if wandb.config.train_with_probes else "instance"
+                ),
             )
             test_loader = DataLoader(
                 dataset=test_data,
@@ -738,6 +778,11 @@ def main():
                 if torch.cuda.is_available()
                 else 4,  # Reducir workers con CUDA
                 # collate_fn=custom_collate_fn,  # Añadir custom collate
+            )
+
+            save_folder = f"../models/{wandb.config.model}/{experiment_name}"
+            mri_probe, pet_probe = load_trained_probes(
+                f"{save_folder}/{wandb.config.model}_{wandb.config.modality}_split{split}_probes.pt"
             )
 
         # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -768,7 +813,7 @@ def main():
                 num_classes=wandb.config.class_num,
                 channels=wandb.config.in_chans,
             )
-            # model = model_pet, model_mri, model_mp, 
+            # model = model_pet, model_mri, model_mp,
             for param in model[0].parameters():
                 param.requires_grad = True
             for param in model[1].parameters():
@@ -778,10 +823,7 @@ def main():
 
             if wandb.config.train_with_probes:
                 # Set requires_grad to True for the probes
-                diamond.probe_mri.requires_grad = False
-                diamond.probe_pet.requires_grad = False
-                diamond.probe_mri_linear.requires_grad = True
-                diamond.probe_pet_linear.requires_grad = True
+                pass
 
             regbn_module = RegBN(**regbn_kwargs).to(device)
 
@@ -801,22 +843,20 @@ def main():
         )
 
         if not (wandb.config.test):
-
-            pytorch_total_params = sum(p.numel() for m in model for p in m.parameters())            
+            pytorch_total_params = sum(p.numel() for m in model for p in m.parameters())
             pytorch_total_train_params = sum(
                 p.numel() for m in model for p in m.parameters() if p.requires_grad
             )
 
             if wandb.config.train_with_probes:
-                pytorch_total_params += diamond.probe_mri.numel() + diamond.probe_pet.numel()
-                
-                pytorch_total_train_params += sum(
-                    p.numel() for p in diamond.probe_mri_linear.parameters() if p.requires_grad
-                )
-                pytorch_total_train_params += sum(
-                    p.numel() for p in diamond.probe_pet_linear.parameters() if p.requires_grad
-                )
-                    
+                pytorch_total_params += mri_probe.numel() + pet_probe.numel()
+
+                # pytorch_total_train_params += sum(
+                #     p.numel() for p in diamond.probe_mri_linear.parameters() if p.requires_grad
+                # )
+                # pytorch_total_train_params += sum(
+                #     p.numel() for p in diamond.probe_pet_linear.parameters() if p.requires_grad
+                # )
 
             if head is not None:
                 pytorch_total_params += sum(p.numel() for p in head.parameters())
@@ -842,6 +882,9 @@ def main():
             optimizer_params = [
                 p for m in model for p in m.parameters() if p.requires_grad
             ]
+
+            if wandb.config.train_with_probes:
+                optimizer_params += [mri_probe, pet_probe]
 
             if head is not None:
                 if pretrained is not None:
@@ -986,6 +1029,16 @@ def main():
                         },
                         f"{save_folder}/{wandb.config.model}_{wandb.config.modality}_split{split}_latest.pt",
                     )
+
+                    # save probes
+                    if wandb.config.train_with_probes:
+                        torch.save(
+                            {
+                                "mri_probe": mri_probe,
+                                "pet_probe": pet_probe,
+                            },
+                            f"{save_folder}/{wandb.config.model}_{wandb.config.modality}_split{split}_probes.pt",
+                        )
 
             wandb.log({"max_bacc": max_accuracy, "max_bacc_epoch": max_epoch})
             print(f"Max BACC: {max_accuracy} at epoch {max_epoch}")

@@ -444,11 +444,12 @@ class MINiT(nn.Module):
 
 class DiaMond:
     def __init__(self):
-        self.probe_mri = None  # Shared MRI probe tensor
-        self.probe_mri_linear = None  # Shared linear layer for MRI probe
-        self.probe_pet = None  # Shared PET probe tensor
-        self.probe_pet_linear = None  # Shared linear layer for PET probe
-        self.train_with_probes = False  # Default to not using probes for missing pairs
+        # self.probe_mri = None  # Shared MRI probe tensor
+        # self.probe_mri_linear = None  # Shared linear layer for MRI probe
+        # self.probe_pet = None  # Shared PET probe tensor
+        # self.probe_pet_linear = None  # Shared linear layer for PET probe
+        # self.train_with_probes = False  # Default to not using probes for missing pairs
+        pass
 
     def body(self, **kwargs):
         return MINiT(**kwargs)
@@ -465,18 +466,18 @@ class DiaMond:
             self.load(model_mri, PATH_MRI)
 
         # Ensure MRI probe tensor and linear layer are instantiated only once
-        if self.probe_mri is None:
-            k = kwargs.get("probe_size", 8)  # Default size of the MRI probe tensor
-            dim = kwargs["dim"]
-            self.probe_mri = nn.Parameter(torch.ones(1, 1, k, k, k))  # Shared tensor
-            self.probe_mri_linear = nn.Linear(k**3, dim)
+        # if self.probe_mri is None:
+        #     k = kwargs.get("probe_size", 8)  # Default size of the MRI probe tensor
+        #     dim = kwargs["dim"]
+        #     self.probe_mri = nn.Parameter(torch.ones(1, 1, k, k, k))  # Shared tensor
+        #     self.probe_mri_linear = nn.Linear(k**3, dim)
 
-        # Ensure PET probe tensor and linear layer are instantiated only once
-        if self.probe_pet is None:
-            k = kwargs.get("probe_size", 8)  # Default size of the PET probe tensor
-            dim = kwargs["dim"]
-            self.probe_pet = nn.Parameter(torch.ones(1, 1, k, k, k))  # Shared tensor
-            self.probe_pet_linear = nn.Linear(k**3, dim)
+        # # Ensure PET probe tensor and linear layer are instantiated only once
+        # if self.probe_pet is None:
+        #     k = kwargs.get("probe_size", 8)  # Default size of the PET probe tensor
+        #     dim = kwargs["dim"]
+        #     self.probe_pet = nn.Parameter(torch.ones(1, 1, k, k, k))  # Shared tensor
+        #     self.probe_pet_linear = nn.Linear(k**3, dim)
 
         kwargs["modality"] = "multi"
         model_mp = self.body(**kwargs)
@@ -508,7 +509,7 @@ if __name__ == "__main__":
     diamond = DiaMond()
     PATH_PET, PATH_MRI = None, None  #'/path/to/pet/model.pt', '/path/to/mri/model.pt'
 
-    model_pet, model_mri, model_mp, probe_mri, probe_mri_linear, probe_pet, probe_pet_linear = diamond.body_all(
+    model_pet, model_mri, model_mp = diamond.body_all(
         PATH_PET,
         PATH_MRI,
         modality="multi",

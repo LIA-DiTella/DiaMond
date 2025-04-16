@@ -128,6 +128,7 @@ class RegBN(nn.Module):
         self.sigma_THR = sigma_THR
         self.sigma_MIN = sigma_MIN
         self.verbose = verbose
+        print(device)
         self.device = device
 
         g_dim_flat = reduce(operator.mul, [g_num_channels] + g_layer_dim, 1)
@@ -146,10 +147,9 @@ class RegBN(nn.Module):
             "line_search_fn": "strong_wolfe",
             "tolerance_grad": 1e-05,
             "tolerance_change": 1e-09,
-            "device": self.device,
         }
 
-        self.W_calc = proj_matrix_estimator(lbfgs_kwargs)
+        self.W_calc = proj_matrix_estimator(device=device, **lbfgs_kwargs)
         self.register_buffer("W", torch.zeros(g_dim_flat, f_dim_flat).to(self.device))
 
         # updateing projection weights
@@ -306,7 +306,7 @@ class proj_matrix_estimator(object):
         usx = self.get_usx(x, lambda_, u, s_diag)
         objective = torch.mm(usx, usx.conj().t())
         objective = objective.sum()
-        objective = L1torch(objective, torch.tensor(1.0).to(x.get_device()))
+        objective = L1torch(objective, torch.tensor(1.0).to(self.device))
         return objective
 
     def get_W_plus(self, lambda_, u, s_diag, v) -> Tensor:
