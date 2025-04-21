@@ -26,6 +26,8 @@ from optimizer import LARS, CosineWarmupScheduler
 from regbn import RegBN
 import warnings
 
+from ModalityConverter import ModalityConverter
+
 cuda_id = 0
 device = torch.device(
     f"cuda:{cuda_id}"
@@ -123,7 +125,9 @@ def get_output(
     epoch_id: int = -1,
     is_training: bool = False,
     train_with_probes: bool = False,  # New parameter to control probe usage
-    
+    modality_conversion: bool = None,  # If training with missing modalities, this enables using data from the other modality as input for the model
+    model_pet2mri=None,  # model to pseudo-convert PET to MRI
+    model_mri2pet=None,  # model to pseudo-convert MRI to PET
 ):
     (mri_data, pet_data), label = batch_data
 
@@ -160,6 +164,14 @@ def get_output(
 
     if modality == "multi":
         try:
+            if modality_conversion:
+                if mri_data is None:
+                    # Convert PET to MRI
+                    pet_data = model_pet2mri(pet_data)
+                elif pet_data is None:
+                    # Convert MRI to PET
+                    mri_data = model_mri2pet(mri_data)
+
             output_pet = model_pet(pet_data)
             output_mri = model_mri(mri_data)
 
@@ -207,6 +219,9 @@ def train(
     modality=None,
     epoch_id: int = None,
     train_with_probes: bool = False,  # New parameter to control probe usage
+    modality_conversion: bool = None,  # If training with missing modalities, this enables using data from the other modality as input for the model
+    model_pet2mri=None,  # model to pseudo-convert PET to MRI
+    model_mri2pet=None,  # model to pseudo-convert MRI to PET
 ):
     model_pet, model_mri, model_mp = model
     model_pet, model_mri, model_mp = (
@@ -214,6 +229,12 @@ def train(
         model_mri.train(),
         model_mp.train(),
     )
+
+    if model_pet2mri is not None:
+        model_pet2mri.train()
+
+    if model_mri2pet is not None:
+        model_mri2pet.train()
 
     if head is not None:
         # print RAM estimation for the head
@@ -243,6 +264,9 @@ def train(
             epoch_id=epoch_id,
             is_training=True,
             train_with_probes=train_with_probes,
+            modality_conversion=modality_conversion,
+            model_pet2mri=model_pet2mri,
+            model_mri2pet=model_mri2pet,
         )
         if output is None or label is None:
             continue  # Skip this batch if output or label is None
@@ -295,9 +319,20 @@ def calculate_val_loss(
     num_classes,
     loss_fn=nn.BCEWithLogitsLoss(),
     modality=None,
+    mri_probe=None,
+    pet_probe=None,
+    train_with_probes=False,
+    modality_conversion=False,  # If training with missing modalities, this enables using data from the other modality as input for the model
+    model_pet2mri=None,  # model to pseudo-convert PET to MRI
+    model_mri2pet=None,  # model to pseudo-convert MRI to PET
 ):
     model_pet, model_mri, model_mp = model
     model_pet, model_mri, model_mp = model_pet.eval(), model_mri.eval(), model_mp.eval()
+
+    if model_pet2mri is not None:
+        model_pet2mri = model_pet2mri.eval()
+    if model_mri2pet is not None:
+        model_mri2pet = model_mri2pet.eval()
 
     if head is not None:
         head.eval()
@@ -318,6 +353,10 @@ def calculate_val_loss(
                 head,
                 device,
                 modality,
+                train_with_probes=train_with_probes,
+                modality_conversion=modality_conversion,
+                model_pet2mri=model_pet2mri,
+                model_mri2pet=model_mri2pet,
             )
             if output is None or label is None:
                 continue  # Skip this batch if output or label is None
@@ -384,6 +423,12 @@ def test(
     num_classes,
     loss_fn=nn.BCEWithLogitsLoss(),
     modality=None,
+    mri_probe=None,
+    pet_probe=None,
+    train_with_probes=False,
+    modality_conversion=False,  # If training with missing modalities, this enables using data from the other modality as input for the model
+    model_pet2mri=None,  # model to pseudo-convert PET to MRI
+    model_mri2pet=None,  # model to pseudo-convert MRI to PET
 ):
     model_pet, model_mri, model_mp = model
     model_pet, model_mri, model_mp = model_pet.eval(), model_mri.eval(), model_mp.eval()
@@ -408,6 +453,12 @@ def test(
                 head,
                 device,
                 modality,
+                steps_per_epoch=-1,
+                epoch_id=-1,
+                train_with_probes=train_with_probes,
+                modality_conversion=modality_conversion,
+                model_pet2mri=model_pet2mri,
+                model_mri2pet=model_mri2pet,
             )
             if output is None or label is None:
                 continue  # Skip this batch if output or label is None
@@ -694,6 +745,9 @@ def main():
             reinit=True,
             name=f"{config['model']}_{config['modality']}_split{split}",
         )
+    
+        imputing_method = "probes" if wandb.config.train_with_probes else "instance"
+
         seed_everything(wandb.config.seed)
         dataset_path = wandb.config.dataset_path
 
@@ -711,9 +765,7 @@ def main():
                 allow_incomplete_pairs=wandb.config.get(
                     "allow_incomplete_pairs", False
                 ),  # Added parameter
-                imputing_method=(
-                    "probes" if wandb.config.train_with_probes else "instance"
-                ),
+                imputing_method=(imputing_method),
             )
 
             mri_probe, pet_probe = train_data.get_probes()
@@ -731,9 +783,7 @@ def main():
                 ),  # Added parameter
                 trained_mri_probe=mri_probe,
                 trained_pet_probe=pet_probe,
-                imputing_method=(
-                    "probes" if wandb.config.train_with_probes else "instance"
-                ),
+                imputing_method=(imputing_method),
             )
 
             train_loader = DataLoader(
@@ -759,7 +809,7 @@ def main():
         else:
             split_test_path = f"{dataset_path}/{split}-test.h5"
             print(f"Loading test data from: {split_test_path}")
-            
+
             save_folder = f"../models/{wandb.config.model}/{experiment_name}"
             mri_probe, pet_probe = load_trained_probes(
                 f"{save_folder}/{wandb.config.model}_{wandb.config.modality}_split{split}_probes.pt"
@@ -775,9 +825,7 @@ def main():
                 ),  # Added parameter
                 trained_mri_probe=mri_probe,
                 trained_pet_probe=pet_probe,
-                imputing_method=(
-                    "probes" if wandb.config.train_with_probes else "instance"
-                ),
+                imputing_method=(imputing_method),
             )
             test_loader = DataLoader(
                 dataset=test_data,
@@ -830,6 +878,62 @@ def main():
                 pass
 
             regbn_module = RegBN(**regbn_kwargs).to(device)
+        elif wandb.config.model == "DiaMond+ModalityConverter":
+            diamond = DiaMond()
+            model = diamond.body_all(
+                # PATH_PET = f'path/to/mono_pet.pt',
+                # PATH_MRI = f'path/to/mono_mri.pt',
+                modality=wandb.config.modality,
+                block_size=wandb.config.block_size,
+                image_size=wandb.config.img_size,
+                patch_size=wandb.config.patch_size,
+                num_classes=wandb.config.class_num,
+                channels=wandb.config.in_chans,
+                dim=wandb.config.dim,
+                depth=wandb.config.depth,
+                heads=wandb.config.heads,
+                dropout=wandb.config.dropout,
+                mlp_dim=309,
+            )
+            head = diamond.head(
+                block_size=wandb.config.block_size,
+                image_size=wandb.config.img_size,
+                num_classes=wandb.config.class_num,
+                channels=wandb.config.in_chans,
+            )
+            # model = model_pet, model_mri, model_mp,
+
+            for param in model[0].parameters():
+                param.requires_grad = True
+            for param in model[1].parameters():
+                param.requires_grad = True
+            for param in model[2].parameters():
+                param.requires_grad = True
+
+            if wandb.config.train_with_probes:
+                # Set requires_grad to True for the probes
+                pass
+
+            regbn_module = RegBN(**regbn_kwargs).to(device)
+
+            model_pet2mri = ModalityConverter(
+                wandb.config.img_size, wandb.config.in_chans
+            ).to(device)
+            model_mri2pet = ModalityConverter(
+                wandb.config.img_size, wandb.config.in_chans
+            ).to(device)
+
+            for param in model_pet2mri.parameters():
+                param.requires_grad = True
+            for param in model_mri2pet.parameters():
+                param.requires_grad = True
+            wandb.config.update(
+                {
+                    "model_pet2mri": model_pet2mri,
+                    "model_mri2pet": model_mri2pet,
+                },
+                allow_val_change=True,
+            )
 
         else:
             raise ValueError(f"Model {wandb.config.model} not implemented")
@@ -889,6 +993,28 @@ def main():
 
             if wandb.config.train_with_probes:
                 optimizer_params += [mri_probe, pet_probe]
+        
+            if wandb.config.model == "DiaMond+ModalityConverter":
+                optimizer_params += [
+                    p for p in model_pet2mri.parameters() if p.requires_grad
+                ] + [p for p in model_mri2pet.parameters() if p.requires_grad]
+                if wandb.config.pretrained is not None:
+                    msg = model_pet2mri.load_state_dict(
+                        pretrained["model_pet2mri_state_dict"]
+                    )
+                    print("load pretrained model_pet2mri:", msg)
+                    msg = model_mri2pet.load_state_dict(
+                        pretrained["model_mri2pet_state_dict"]
+                    )
+                    print("load pretrained model_mri2pet:", msg)
+                else:
+                    model_pet2mri.apply(init_weights)
+                    model_mri2pet.apply(init_weights)
+                model_pet2mri = model_pet2mri.to(device)
+                model_mri2pet = model_mri2pet.to(device)
+                optimizer_params += [
+                    p for p in model_pet2mri.parameters() if p.requires_grad
+                ] + [p for p in model_mri2pet.parameters() if p.requires_grad]
 
             if head is not None:
                 if pretrained is not None:
@@ -963,6 +1089,9 @@ def main():
                     modality=wandb.config.modality,
                     epoch_id=epoch,
                     train_with_probes=wandb.config.train_with_probes,  # New parameter
+                    modality_conversion=wandb.config.modality_conversion,
+                    model_pet2mri=model_pet2mri,
+                    model_mri2pet=model_mri2pet,
                 )
                 print(optimizer.param_groups[0]["lr"])
 
@@ -981,6 +1110,16 @@ def main():
                     wandb.config.class_num,
                     loss_fn,
                     modality=wandb.config.modality,
+                    mri_probe=mri_probe,
+                    pet_probe=pet_probe,
+                    train_with_probes=wandb.config.train_with_probes,
+                    modality_conversion=wandb.config.modality_conversion,
+                    model_pet2mri=model_pet2mri
+                    if wandb.config.modality_conversion
+                    else None,
+                    model_mri2pet=model_mri2pet
+                    if wandb.config.modality_conversion
+                    else None,
                 )
 
                 wandb.log(
@@ -1044,6 +1183,15 @@ def main():
                             f"{save_folder}/{wandb.config.model}_{wandb.config.modality}_split{split}_probes.pt",
                         )
 
+                    if wandb.config.modality_conversion:
+                        torch.save(
+                            {
+                                "model_pet2mri_state_dict": model_pet2mri.state_dict(),
+                                "model_mri2pet_state_dict": model_mri2pet.state_dict(),
+                            },
+                            f"{save_folder}/{wandb.config.model}_{wandb.config.modality}_split{split}_modality_conversion.pt",
+                        )
+
             wandb.log({"max_bacc": max_accuracy, "max_bacc_epoch": max_epoch})
             print(f"Max BACC: {max_accuracy} at epoch {max_epoch}")
             print(
@@ -1070,6 +1218,21 @@ def main():
                 head.load_state_dict(checkpoint["head_state_dict"])
                 head.to(device)
 
+            if wandb.config.train_with_probes:
+                mri_probe = checkpoint["mri_probe"]
+                pet_probe = checkpoint["pet_probe"]
+
+                mri_probe.to(device)
+                pet_probe.to(device)
+
+            model_pet2mri = None
+            model_mri2pet = None
+            if wandb.config.modality_conversion:
+                model_pet2mri.load_state_dict(checkpoint["model_pet2mri_state_dict"])
+                model_mri2pet.load_state_dict(checkpoint["model_mri2pet_state_dict"])
+                model_pet2mri.to(device)
+                model_mri2pet.to(device)
+
             epoch = checkpoint["epoch"]
             print(f"========= Loaded model from Epoch: {epoch} =================")
             print(msg)
@@ -1081,6 +1244,16 @@ def main():
                 wandb.config.class_num,
                 loss_fn,
                 modality=wandb.config.modality,
+                mri_probe=mri_probe,
+                pet_probe=pet_probe,
+                train_with_probes=wandb.config.train_with_probes,
+                modality_conversion=wandb.config.modality_conversion,
+                model_pet2mri=model_pet2mri
+                if wandb.config.modality_conversion
+                else None,
+                model_mri2pet=model_mri2pet
+                if wandb.config.modality_conversion
+                else None,
             )
 
             test_bacc.append(test_accuracy)
