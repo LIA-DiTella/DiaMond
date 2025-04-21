@@ -73,16 +73,17 @@ class AdniDataset(Dataset):
             self.transforms.append(get_image_transform(is_training))
 
         self.blank_shape = (1, 128, 128, 128)
+        self.probe_base = torch.zeros(self.blank_shape, dtype=torch.float32)
 
         if self.allow_incomplete_pairs:
             if self.is_training:
                 if self.imputing_method == "probes":
                     self.pet_probe = nn.Parameter(
-                        torch.zeros(self.blank_shape, dtype=torch.float32),
+                        self.probe_base.clone(),
                         requires_grad=True,
                     )
                     self.mri_probe = nn.Parameter(
-                        torch.zeros(self.blank_shape, dtype=torch.float32),
+                        self.probe_base.clone(),
                         requires_grad=True,
                     )
             else:
