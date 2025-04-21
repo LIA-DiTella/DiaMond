@@ -1,5 +1,5 @@
 seed: 66666
-model: DiaMond
+model: DiaMond+ModalityConverter
 modality: multi
 split: 1
 
@@ -41,4 +41,5 @@ wandb_tags: [DiaMond, multi, split1]
 wandb_notes: "DiaMond multi split1"
 
 allow_incomplete_pairs: True
-train_with_probes: True
+train_with_probes: False
+modality_conversion: True
