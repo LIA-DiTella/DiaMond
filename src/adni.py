@@ -64,6 +64,8 @@ class AdniDataset(Dataset):
         self.with_pet = with_pet
         self.allow_incomplete_pairs = allow_incomplete_pairs  # Store the parameter
         self.imputing_method = imputing_method
+        self.pet_probe = None
+        self.mri_probe = None
 
         # Definir transformaciones para las imágenes
         self.transforms = []
@@ -97,9 +99,6 @@ class AdniDataset(Dataset):
             if self.imputing_method == "instance":
                 self.pet_empty = torch.zeros(self.blank_shape, dtype=torch.float32)
                 self.mri_empty = torch.zeros(self.blank_shape, dtype=torch.float32)
-        else:
-            self.pet_probe = None
-            self.mri_probe = None
 
         self._load()
 
