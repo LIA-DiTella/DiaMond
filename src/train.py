@@ -123,6 +123,7 @@ def get_output(
     epoch_id: int = -1,
     is_training: bool = False,
     train_with_probes: bool = False,  # New parameter to control probe usage
+    
 ):
     (mri_data, pet_data), label = batch_data
 
@@ -141,6 +142,9 @@ def get_output(
     if not train_with_probes:
         if mri_data is None or pet_data is None:
             return None, None  # Skip this pair if probes are not used
+
+    if mri_data is None and pet_data is None:
+        return None, None  # Skip this pair if probes are not used
 
     # Use the MRI probe tensor if MRI data is missing
     # if mri_data is None:
@@ -755,6 +759,11 @@ def main():
         else:
             split_test_path = f"{dataset_path}/{split}-test.h5"
             print(f"Loading test data from: {split_test_path}")
+            
+            save_folder = f"../models/{wandb.config.model}/{experiment_name}"
+            mri_probe, pet_probe = load_trained_probes(
+                f"{save_folder}/{wandb.config.model}_{wandb.config.modality}_split{split}_probes.pt"
+            )
             test_data = AdniDataset(
                 path=split_test_path,
                 is_training=False,
@@ -778,11 +787,6 @@ def main():
                 if torch.cuda.is_available()
                 else 4,  # Reducir workers con CUDA
                 # collate_fn=custom_collate_fn,  # Añadir custom collate
-            )
-
-            save_folder = f"../models/{wandb.config.model}/{experiment_name}"
-            mri_probe, pet_probe = load_trained_probes(
-                f"{save_folder}/{wandb.config.model}_{wandb.config.modality}_split{split}_probes.pt"
             )
 
         # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
