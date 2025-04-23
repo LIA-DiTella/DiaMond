@@ -183,3 +183,4 @@ unittests.cfg
 airflow/dags/__pycache__/
 airflow/plugins/__pycache__/
 *.zip
+clinical_data.csv
