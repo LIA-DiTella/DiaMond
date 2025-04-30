@@ -43,3 +43,5 @@ wandb_notes: "DiaMond multi split1"
 allow_incomplete_pairs: True
 train_with_probes: False
 modality_conversion: True
+loss_for_modality_conversion: True
+aggregate_loss: False

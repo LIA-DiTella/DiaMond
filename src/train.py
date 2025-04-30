@@ -1136,6 +1136,9 @@ def main():
                     modality_conversion=wandb.config.modality_conversion,
                     model_pet2mri=model_pet2mri,
                     model_mri2pet=model_mri2pet,
+                    device=device,
+                    loss_for_modality_conversion=wandb.config.loss_for_modality_conversion,
+                    aggregate_loss=wandb.config.aggregate_loss,
                 )
                 print(optimizer.param_groups[0]["lr"])
 
