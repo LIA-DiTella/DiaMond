@@ -401,7 +401,7 @@ def calculate_val_loss(
 
     with torch.no_grad():
         for batch_data in dataloader:
-            output, label = get_output(
+            output, label, (_, _), (_, _) = get_output(
                 regbn_module,
                 batch_data,
                 model,
@@ -501,7 +501,7 @@ def test(
 
     with torch.no_grad():
         for batch_data in dataloader:
-            output, label = get_output(
+            output, label, (_, _), (_, _) = get_output(
                 regbn_module,
                 batch_data,
                 model,
