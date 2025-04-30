@@ -922,7 +922,9 @@ def main():
                 pass
 
             regbn_module = RegBN(**regbn_kwargs).to(device)
-        elif wandb.config.model == "DiaMond+ModalityConverter":
+        elif (wandb.config.model == "DiaMond+ModalityConverter") or (
+            wandb.config.model == "DiaMond+ModalityConverter+MultiLoss"
+        ):
             diamond = DiaMond()
             model = diamond.body_all(
                 # PATH_PET = f'path/to/mono_pet.pt',
