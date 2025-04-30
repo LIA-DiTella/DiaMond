@@ -127,7 +127,7 @@ class AdniDataset(Dataset):
                         self.with_pet and not has_pet
                     ):
                         LOG.warning(
-                            f"Sujeto {name} no tiene todas las modalidades requeridas, saltando"
+                            f"Sujeto {name} no tiene todas las modalidades requeridas, saltando - Grupo: {group}"
                         )
                         continue
                 else:
