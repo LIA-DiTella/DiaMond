@@ -258,15 +258,9 @@ def train(
         loss_fn_mri2pet = loss_fn_mri2pet.to(device)
 
     if head is not None:
-        # print RAM estimation for the head
-        # print(
-        #     f"Head RAM estimation: {sum(p.numel() for p in head.parameters()) * 4 / 1024 / 1024} MB"
-        # )
-
         head.train()
 
     cumulative_loss = 0.0
-    # cumulative_acc = 0.0
     all_predicted_class_labels = np.asarray([])
     all_loss_labels = np.asarray([])
     steps_per_epoch = len(dataloader)
@@ -293,44 +287,55 @@ def train(
         if output is None or label is None:
             continue  # Skip this batch if output or label is None
 
-        if loss_for_modality_conversion:
-            # Evaluate the loss for the modality conversion
-            # Either PET to MRI or MRI to PET, compare the converted data with the original data when the original data is NOT missing
-
-            (mri_data_in, pet_data_in), label = batch_data
-            mri_data_in = mri_data_in.to(device) if mri_data_in is not None else None
-            pet_data_in = pet_data_in.to(device) if pet_data_in is not None else None
-
-            if not missing_mri:
-                loss_pet2mri = loss_fn_pet2mri(
-                    mri_data_in, mri_data_out
-                ).to(device)
-
-            if not missing_pet:
-                loss_mri2pet = loss_fn_mri2pet(
-                    pet_data_in, pet_data_out
-                )
-
-        else:
-            loss = (
-                loss_fn(output.squeeze(1).float(), label.float())
-                if num_classes == 2
-                else loss_fn(output, label)
-            )
+        loss = (
+            loss_fn(output.squeeze(1).float(), label.float())
+            if num_classes == 2
+            else loss_fn(output, label)
+        )
 
         optimizer.zero_grad()
 
         if loss_for_modality_conversion:
-            if aggregate_loss:
-                loss = (
-                    loss + loss_pet2mri + loss_mri2pet
-                )
-            else:
-                if not missing_mri and not missing_pet:
-                    loss_pet2mri.backward()
-                    loss_mri2pet.backward()
+            # Evaluate the loss for the modality conversion
+            # Either PET to MRI or MRI to PET, compare the converted data with the original data when the original data is NOT missing
+            (mri_data_in, pet_data_in), label = batch_data
+            mri_data_in = mri_data_in.to(device) if mri_data_in is not None else None
+            pet_data_in = pet_data_in.to(device) if pet_data_in is not None else None
 
-        loss.backward()
+            loss_pet2mri = None
+            loss_mri2pet = None
+
+            # Solo calculamos pérdidas de conversión si tenemos los datos originales para comparar
+            if mri_data_in is not None and not missing_mri and mri_data_out is not None:
+                # Aseguramos que los tensores tengan gradientes habilitados
+                if not mri_data_out.requires_grad:
+                    mri_data_out = mri_data_out.detach().requires_grad_(True)
+                loss_pet2mri = loss_fn_pet2mri(mri_data_in, mri_data_out)
+
+            if pet_data_in is not None and not missing_pet and pet_data_out is not None:
+                # Aseguramos que los tensores tengan gradientes habilitados
+                if not pet_data_out.requires_grad:
+                    pet_data_out = pet_data_out.detach().requires_grad_(True)
+                loss_mri2pet = loss_fn_mri2pet(pet_data_in, pet_data_out)
+
+            if aggregate_loss:
+                # Agregamos las pérdidas solo si existen
+                total_loss = loss
+                if loss_pet2mri is not None:
+                    total_loss = total_loss + loss_pet2mri
+                if loss_mri2pet is not None:
+                    total_loss = total_loss + loss_mri2pet
+                total_loss.backward()
+            else:
+                # Propagamos pérdidas individualmente
+                loss.backward()
+                if loss_pet2mri is not None:
+                    loss_pet2mri.backward(retain_graph=True)
+                if loss_mri2pet is not None:
+                    loss_mri2pet.backward(retain_graph=True)
+        else:
+            # Caso normal sin conversión de modalidad
+            loss.backward()
 
         optimizer.step()
 
@@ -795,7 +800,7 @@ def main():
             tags=[],
             config=config,
             mode=wandb_mode,
-            reinit=True,
+            reinit="finish_previous",
             name=f"{config['model']}_{config['modality']}_split{split}",
         )
 
