@@ -1,5 +1,5 @@
 seed: 66666
-model: DiaMond+ModalityConverter
+model: DiaMond+ModalityConverter+MultiLoss
 modality: multi
 split: 1
 
