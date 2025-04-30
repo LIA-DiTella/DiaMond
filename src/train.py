@@ -298,6 +298,9 @@ def train(
             # Either PET to MRI or MRI to PET, compare the converted data with the original data when the original data is NOT missing
 
             (mri_data_in, pet_data_in), label = batch_data
+            mri_data_in = mri_data_in.to(device) if mri_data_in is not None else None
+            pet_data_in = pet_data_in.to(device) if pet_data_in is not None else None
+
             if not missing_mri:
                 loss_pet2mri = loss_fn_pet2mri(
                     mri_data_in, mri_data_out
@@ -322,10 +325,11 @@ def train(
                 loss = (
                     loss + loss_pet2mri + loss_mri2pet
                 )
-            if not missing_mri and not missing_pet:
-                loss_pet2mri.backward()
-                loss_mri2pet.backward()
-                
+            else:
+                if not missing_mri and not missing_pet:
+                    loss_pet2mri.backward()
+                    loss_mri2pet.backward()
+
         loss.backward()
 
         optimizer.step()
