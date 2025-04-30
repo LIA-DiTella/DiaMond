@@ -216,13 +216,27 @@ class AdniDataset(Dataset):
         # Make sure image_data is tensor
         for i in range(len(image_data)):
             if isinstance(image_data[i], tuple):
+                # image_data[i] = tuple(data.detach().clone() for data in image_data[i])
                 # image_data[i] = tuple(
-                #     torch.tensor(data, dtype=torch.float32) for data in image_data[i]
+                # torch.tensor(data, dtype=torch.float32) for data in image_data[i]
                 # )
-                image_data[i] = tuple(data.detach().clone() for data in image_data[i])
+
+                image_data[i] = tuple(
+                    (
+                        data.detach().clone()
+                        if isinstance(data, torch.Tensor)
+                        else torch.tensor(data, dtype=torch.float32)
+                    )
+                    for data in image_data[i]
+                )
             else:
                 # image_data[i] = torch.tensor(image_data[i], dtype=torch.float32)
-                image_data[i] = image_data[i].detach().clone()
+                # image_data[i] = image_data[i].detach().clone()
+                image_data[i] = (
+                    image_data[i].detach().clone()
+                    if isinstance(image_data[i], torch.Tensor)
+                    else torch.tensor(image_data[i], dtype=torch.float32)
+                )
         # Convertir a tensor
         # image_data = torch.tensor(image_data, dtype=torch.float32)
 
