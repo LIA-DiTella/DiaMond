@@ -128,6 +128,7 @@ def get_output(
     modality_conversion: bool = None,  # If training with missing modalities, this enables using data from the other modality as input for the model
     model_pet2mri=None,  # model to pseudo-convert PET to MRI
     model_mri2pet=None,  # model to pseudo-convert MRI to PET
+    loss_for_modality_conversion=False,  # If training with missing modalities, this enables using data from the other modality as input for the model
 ):
     (mri_data, pet_data), label = batch_data
 
@@ -162,15 +163,22 @@ def get_output(
     #     probe_pet_flat = probe_pet.view(probe_pet.size(0), -1)  # Flatten the probe
     #     pet_data = diamond.probe_pet_linear(probe_pet_flat).unsqueeze(0)  # Pass through linear layer
 
+    missing_mri = False
+    missing_pet = False
     if modality == "multi":
         try:
+            if mri_data is None and pet_data is None:
+                # Both modalities are missing
+                return None, None
             if modality_conversion:
                 if mri_data is None:
                     # Convert PET to MRI
-                    pet_data = model_pet2mri(pet_data)
+                    missing_mri = True
+                    mri_data = model_pet2mri(pet_data)
                 elif pet_data is None:
                     # Convert MRI to PET
-                    mri_data = model_mri2pet(mri_data)
+                    missing_pet = True
+                    pet_data = model_mri2pet(mri_data)
 
             output_pet = model_pet(pet_data)
             output_mri = model_mri(mri_data)
@@ -192,6 +200,9 @@ def get_output(
             output_mp = model_mp(pet_data, mri_data)
 
             output = (output_pet + output_mri + output_mp) / 3
+
+           
+
         except Exception as e:
             print(f"Error in processing: {e}")
             print(f"Shapes involved - MRI: {mri_data.shape}, PET: {pet_data.shape}")
@@ -201,7 +212,8 @@ def get_output(
 
     if head is not None:
         output = head(output)
-    return output, label
+    
+    return output, label, (pet_data, missing_pet), (mri_data, missing_mri)
 
 
 ##################################################################################
@@ -222,6 +234,10 @@ def train(
     modality_conversion: bool = None,  # If training with missing modalities, this enables using data from the other modality as input for the model
     model_pet2mri=None,  # model to pseudo-convert PET to MRI
     model_mri2pet=None,  # model to pseudo-convert MRI to PET
+    loss_for_modality_conversion=False,  # If training with missing modalities, this enables using data from the other modality as input for the model
+    loss_fn_pet2mri=nn.MSELoss(),
+    loss_fn_mri2pet=nn.MSELoss(),
+    aggregate_loss=False,
 ):
     model_pet, model_mri, model_mp = model
     model_pet, model_mri, model_mp = (
@@ -250,7 +266,7 @@ def train(
     all_loss_labels = np.asarray([])
     steps_per_epoch = len(dataloader)
     for batch_data in dataloader:
-        output, label = get_output(
+        output, label, (pet_data_out, missing_pet), (mri_data_out, missing_mri) = get_output(
             regbn_module,
             batch_data,
             model,
@@ -267,18 +283,46 @@ def train(
             modality_conversion=modality_conversion,
             model_pet2mri=model_pet2mri,
             model_mri2pet=model_mri2pet,
+            loss_for_modality_conversion=loss_for_modality_conversion
         )
         if output is None or label is None:
             continue  # Skip this batch if output or label is None
 
-        loss = (
-            loss_fn(output.squeeze(1).float(), label.float())
-            if num_classes == 2
-            else loss_fn(output, label)
-        )
+        if loss_for_modality_conversion:
+            # Evaluate the loss for the modality conversion
+            # Either PET to MRI or MRI to PET, compare the converted data with the original data when the original data is NOT missing
+
+            (mri_data_in, pet_data_in), label = batch_data
+            if not missing_mri:
+                loss_pet2mri = loss_fn_pet2mri(
+                    mri_data_in, mri_data_out
+                )
+
+            if not missing_pet:
+                loss_mri2pet = loss_fn_mri2pet(
+                    pet_data_in, pet_data_out
+                )
+
+        else:
+            loss = (
+                loss_fn(output.squeeze(1).float(), label.float())
+                if num_classes == 2
+                else loss_fn(output, label)
+            )
 
         optimizer.zero_grad()
+
+        if loss_for_modality_conversion:
+            if aggregate_loss:
+                loss = (
+                    loss + loss_pet2mri + loss_mri2pet
+                )
+            if not missing_mri and not missing_pet:
+                loss_pet2mri.backward()
+                loss_mri2pet.backward()
+                
         loss.backward()
+
         optimizer.step()
 
         if num_classes == 2:
@@ -360,7 +404,7 @@ def calculate_val_loss(
             )
             if output is None or label is None:
                 continue  # Skip this batch if output or label is None
-
+    
             loss = (
                 loss_fn(output.squeeze(1).float(), label.float())
                 if num_classes == 2
