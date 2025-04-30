@@ -134,7 +134,7 @@ class AdniDataset(Dataset):
                     # Si se permiten pares incompletos, al menos una modalidad debe estar presente
                     if not (has_mri or has_pet):
                         LOG.warning(
-                            f"Sujeto {name} no tiene ninguna modalidad disponible, saltando"
+                            f"Sujeto {name} no tiene ninguna modalidad disponible, saltando - Grupo: {group}"
                         )
                         continue
 
