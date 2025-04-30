@@ -174,11 +174,11 @@ def get_output(
                 if mri_data is None:
                     # Convert PET to MRI
                     missing_mri = True
-                    mri_data = model_pet2mri(pet_data)
+                    mri_data = model_pet2mri(pet_data).to(device)
                 elif pet_data is None:
                     # Convert MRI to PET
                     missing_pet = True
-                    pet_data = model_mri2pet(mri_data)
+                    pet_data = model_mri2pet(mri_data).to(device)
 
             output_pet = model_pet(pet_data)
             output_mri = model_mri(mri_data)
@@ -252,6 +252,11 @@ def train(
     if model_mri2pet is not None:
         model_mri2pet.train()
 
+    if loss_fn_pet2mri is not None:
+        loss_fn_pet2mri = loss_fn_pet2mri.to(device)
+    if loss_fn_mri2pet is not None:
+        loss_fn_mri2pet = loss_fn_mri2pet.to(device)
+
     if head is not None:
         # print RAM estimation for the head
         # print(
@@ -296,7 +301,7 @@ def train(
             if not missing_mri:
                 loss_pet2mri = loss_fn_pet2mri(
                     mri_data_in, mri_data_out
-                )
+                ).to(device)
 
             if not missing_pet:
                 loss_mri2pet = loss_fn_mri2pet(
@@ -789,7 +794,7 @@ def main():
             reinit=True,
             name=f"{config['model']}_{config['modality']}_split{split}",
         )
-    
+
         imputing_method = "probes" if wandb.config.train_with_probes else "instance"
 
         seed_everything(wandb.config.seed)
@@ -994,7 +999,7 @@ def main():
             nn.BCEWithLogitsLoss()
             if wandb.config.class_num == 2
             else nn.CrossEntropyLoss(weight=cls_weight)
-        )
+        ).to(device)
 
         if not (wandb.config.test):
             pytorch_total_params = sum(p.numel() for m in model for p in m.parameters())
@@ -1039,8 +1044,9 @@ def main():
 
             if wandb.config.train_with_probes:
                 optimizer_params += [mri_probe, pet_probe]
-        
-            if wandb.config.model == "DiaMond+ModalityConverter":
+
+            if wandb.config.modality_conversion:
+
                 optimizer_params += [
                     p for p in model_pet2mri.parameters() if p.requires_grad
                 ] + [p for p in model_mri2pet.parameters() if p.requires_grad]
@@ -1056,8 +1062,10 @@ def main():
                 else:
                     model_pet2mri.apply(init_weights)
                     model_mri2pet.apply(init_weights)
+
                 model_pet2mri = model_pet2mri.to(device)
                 model_mri2pet = model_mri2pet.to(device)
+
                 optimizer_params += [
                     p for p in model_pet2mri.parameters() if p.requires_grad
                 ] + [p for p in model_mri2pet.parameters() if p.requires_grad]

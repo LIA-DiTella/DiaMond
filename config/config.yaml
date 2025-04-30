@@ -1,5 +1,5 @@
 seed: 66666
-model: DiaMond+ModalityConverter+MultiLoss
+model: DiaMond+ModalityConverter
 modality: multi
 split: 1
 
@@ -45,3 +45,7 @@ train_with_probes: False
 modality_conversion: True
 loss_for_modality_conversion: True
 aggregate_loss: False
+
+# GAN Configuration
+use_gan: false
+gan_weight: 0.5  # Peso de la pérdida del generador en la pérdida total
