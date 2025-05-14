@@ -556,22 +556,30 @@ def convert_dicoms_to_nifti(dicom_folder, output_dir, verbose=False):
                             if verbose:
                                 logger.info(f"Conversión directa exitosa: {nifti_file}")
                             break
-                        else:
-                            # Si hay múltiples archivos, solicitar uso de dcm2niix
-                            if verbose:
-                                logger.warning(
-                                    "Múltiples archivos DICOM - se recomienda instalar dcm2niix"
-                                )
-                                logger.warning(
-                                    "Comando de instalación: conda install -c conda-forge dcm2niix"
-                                )
-                                logger.warning(
-                                    "o visite https://github.com/rordenlab/dcm2niix para instrucciones"
-                                )
-                            conversion_errors.append(
-                                "Múltiples archivos DICOM detectados. Se recomienda instalar dcm2niix."
+                        elif len(dicom_files) > 1:
+                            # Crear un volumen 3D
+                            pixel_data = np.stack(
+                                [pydicom.dcmread(str(f)).pixel_array for f in dicom_files]
                             )
-                            continue
+
+                            # Crear matriz afín básica
+                            affine = np.eye(4)
+
+                            # Aplicar espaciado de píxeles si está disponible
+                            if hasattr(test_dicom, "PixelSpacing"):
+                                spacing = test_dicom.PixelSpacing
+                                affine[0, 0] = spacing[0]
+                                affine[1, 1] = spacing[1]
+
+                            # Guardar como NIfTI
+                            output_filename = output_dir / "direct_conversion.nii.gz"
+                            nifti_img = nib.Nifti1Image(pixel_data, affine)
+                            nib.save(nifti_img, str(output_filename))
+                            nifti_file = output_filename
+
+                            if verbose:
+                                logger.info(f"Conversión directa exitosa: {nifti_file}")
+                            break
 
                     except Exception as e:
                         conversion_errors.append(
