@@ -51,7 +51,7 @@ if __name__ == "__main__":
         split_train_path = f"{dataset_path}/{split}-train.h5"
         split_train_rids, len_train = observe_dataset(split_train_path)
 
-        split_val_path = f"{dataset_path}/{split}-val.h5"
+        split_val_path = f"{dataset_path}/{split}-valid.h5"
         split_val_rids, len_val = observe_dataset(split_val_path)
 
         split_test_path = f"{dataset_path}/{split}-test.h5"
