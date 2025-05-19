@@ -103,14 +103,14 @@ class AdniDataset(Dataset):
         self._load()
 
     def _load(self):
-        print(f"Loading dataset from {self.path}")
+        # print(f"Loading dataset from {self.path}")
         image_data = []
         diagnosis = []
         rid = []
 
         with h5py.File(self.path, mode="r") as file:
             for name, group in file.items():
-                print(f"Loading subject {name}")
+                # print(f"Loading subject {name}")
 
                 if name == "stats":
                     continue
@@ -119,7 +119,7 @@ class AdniDataset(Dataset):
                 has_mri = "MRI/T1/data" in group
                 has_pet = "PET/FDG/data" in group
 
-                print(f"has_mri: {has_mri}, has_pet: {has_pet}")
+                # print(f"has_mri: {has_mri}, has_pet: {has_pet}")
 
                 # Saltar si faltan modalidades requeridas y no se permiten pares incompletos
                 if not self.allow_incomplete_pairs:
