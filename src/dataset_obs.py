@@ -36,7 +36,7 @@ def observe_dataset(dataset_file_path:str, all_rids:list):
 
     print("data length: ", len(data))
 
-    all_rids.append(data.rids)
+    all_rids.append(data._rid)
 
     wandb.finish()
 
@@ -62,5 +62,3 @@ if __name__ == "__main__":
             if i != j:
                 set_intersection = set(rids).intersection(set(other_rids))
                 print(len(set_intersection), len(rids), len(other_rids))
-
-                
