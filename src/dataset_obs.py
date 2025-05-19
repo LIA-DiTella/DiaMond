@@ -11,9 +11,8 @@ config_path = os.path.join(os.path.dirname(__file__), "..", "config", "config.ya
 with open(config_path, "r") as file:
     config = yaml.safe_load(file)
 
-all_rids = []
 
-def observe_dataset(dataset_file_path:str):
+def observe_dataset(dataset_file_path:str, all_rids:list):
 
     wandb.init(
         project="DiaMond",
@@ -46,10 +45,22 @@ if __name__ == "__main__":
     dataset_path = os.path.join(
         os.path.dirname(__file__), "..", "data", "processed", "hdf5"
     )
+    
+    all_rids = []
 
-    # split = 0
-    # split_train_path = f"{dataset_path}/{split}-train.h5"
+    for split in range(0, 5):
+        split_train_path = f"{dataset_path}/{split}-train.h5"
 
-    # observe_dataset(split_train_path)
 
-    observe_dataset(f"{dataset_path}/adni_dataset.h5")
+        observe_dataset(split_train_path, all_rids)
+
+        # observe_dataset(f"{dataset_path}/adni_dataset.h5")
+
+    for i, rids in enumerate(all_rids):
+        # check set intersection
+        for j, other_rids in enumerate(all_rids):
+            if i != j:
+                set_intersection = set(rids).intersection(set(other_rids))
+                print(len(set_intersection), len(rids), len(other_rids))
+
+                
