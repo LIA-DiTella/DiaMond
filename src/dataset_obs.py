@@ -76,3 +76,10 @@ if __name__ == "__main__":
             if i != j:
                 set_intersection = set(rids).intersection(set(other_rids))
                 print(len(set_intersection), len(rids), len(other_rids))
+
+    flattened_rids = [item for sublist in all_train_rids for item in sublist]
+    # check if all rids are unique
+    unique_rids = set(flattened_rids)
+    print(f"Total unique rids: {len(unique_rids)}")
+    print(f"Total rids: {len(flattened_rids)}")
+    print(f"Total rids: {len(set(flattened_rids))}")
