@@ -3,6 +3,7 @@ import yaml
 import wandb
 from adni import AdniDataset
 import os
+
 # dataset_path = "$(shell pwd)/data/processed/hdf5"
 # CONFIG ?= $(shell pwd)/config/config.yaml
 import csv
@@ -12,8 +13,8 @@ config_path = os.path.join(os.path.dirname(__file__), "..", "config", "config.ya
 with open(config_path, "r") as file:
     config = yaml.safe_load(file)
 
-def observe_dataset(dataset_file_path:str):
 
+def observe_dataset(dataset_file_path: str):
     wandb.init(
         project="DiaMond",
         entity="pardo",
@@ -48,8 +49,8 @@ def observe_dataset(dataset_file_path:str):
     wandb.finish()
     return data._rid, len(data._rid)
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     dataset_path = os.path.join(
         os.path.dirname(__file__), "..", "data", "processed", "hdf5"
     )
@@ -101,18 +102,32 @@ if __name__ == "__main__":
     print(f"Total rids: {len(flattened_rids)}")
     print(f"Total rids: {len(set(flattened_rids))}")
 
-
-    original_sources = ["/home/ipardo/ADNI_data/DiaMond%20Set/ADNI", "/home/ipardo/ADNI_data/DiaMond%20Set1/ADNI", "/home/ipardo/ADNI_data/DiaMond%20Set2/ADNI", "/home/ipardo/ADNI_data/DiaMond%20Set4/ADNI", "/home/ipardo/ADNI_data/DiaMond%20Set5/ADNI", "/home/ipardo/ADNI_data/DiaMond%20Set6/ADNI", "storage1/DiaMond/tmp/DiaMond%20Set7/ADNI", "storage2/DiaMond_tmp/DiaMond%20Set3/ADNI"]
+    original_sources = [
+        "/home/ipardo/ADNI_data/DiaMond%20Set/ADNI",
+        "/home/ipardo/ADNI_data/DiaMond%20Set1/ADNI",
+        "/home/ipardo/ADNI_data/DiaMond%20Set2/ADNI",
+        "/home/ipardo/ADNI_data/DiaMond%20Set4/ADNI",
+        "/home/ipardo/ADNI_data/DiaMond%20Set5/ADNI",
+        "/home/ipardo/ADNI_data/DiaMond%20Set6/ADNI",
+        "/home/ipardo/storage1/DiaMond/tmp/DiaMond%20Set7/ADNI",
+        "/home/ipardo/storage2/DiaMond_tmp/DiaMond%20Set3/ADNI",
+    ]
     symlinked_sources = "storage1/DiaMond/src/data/data/ADNI Data"
 
     all_subdirs = []
     for source in original_sources:
         # Check how many subdirectories are in the source directory
-        subdirs = [d for d in os.listdir(source) if os.path.isdir(os.path.join(source, d))]
+        subdirs = [
+            d for d in os.listdir(source) if os.path.isdir(os.path.join(source, d))
+        ]
         all_subdirs.extend(subdirs)
 
     # Check how many subdirectories are in the symlinked source directory
-    symlinked_subdirs = [d for d in os.listdir(symlinked_sources) if os.path.isdir(os.path.join(symlinked_sources, d))]
+    symlinked_subdirs = [
+        d
+        for d in os.listdir(symlinked_sources)
+        if os.path.isdir(os.path.join(symlinked_sources, d))
+    ]
 
     # Check if the number of subdirectories is the same
     print(f"Original sources: {len(all_subdirs)}")
@@ -121,7 +136,6 @@ if __name__ == "__main__":
     # Intersection of subdirectories
     intersection = set(all_subdirs).intersection(set(symlinked_subdirs))
     print(f"Intersection: {len(intersection)}")
-    
 
     paper_used_ids_csv = os.path.join(
         os.path.dirname(__file__), "data", "paper_adni-all-ids.csv"
@@ -144,10 +158,8 @@ if __name__ == "__main__":
     all_paper_ids_in_rids = set(paper_used_ids).issubset(set(flattened_rids))
     print(f"All paper ids in rids: {all_paper_ids_in_rids}")
 
-    # dirs in 
-    processed_path = os.path.join(
-        os.path.dirname(__file__), "..", "data", "processed"
-    )
+    # dirs in
+    processed_path = os.path.join(os.path.dirname(__file__), "..", "data", "processed")
 
     # Check how many subdirectories are in the processed directory
     subdirs = os.listdir(processed_path)
