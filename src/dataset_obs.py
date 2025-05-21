@@ -112,7 +112,7 @@ if __name__ == "__main__":
         "/home/ipardo/storage1/DiaMond/tmp/DiaMond%20Set7/ADNI",
         "/home/ipardo/storage2/DiaMond_tmp/DiaMond%20Set3/ADNI",
     ]
-    symlinked_sources = "storage1/DiaMond/src/data/data/ADNI Data"
+    symlinked_sources = "/home/ipardo/storage1/DiaMond/src/data/data/ADNI Data"
 
     all_subdirs = []
     for source in original_sources:
