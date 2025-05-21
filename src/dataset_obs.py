@@ -134,3 +134,18 @@ if __name__ == "__main__":
     # check if all paper used ids are in the rids
     all_paper_ids_in_rids = set(paper_used_ids).issubset(set(flattened_rids))
     print(f"All paper ids in rids: {all_paper_ids_in_rids}")
+
+    # dirs in 
+    processed_path = os.path.join(
+        os.path.dirname(__file__), "..", "data", "processed"
+    )
+
+    # Check how many subdirectories are in the processed directory
+    subdirs = os.listdir(processed_path)
+    # remove "hdf5" from the list
+    subdirs = [d for d in subdirs if d != "hdf5"]
+    print(f"Processed path subdirs: {len(subdirs)}")
+
+    # intersection between paper used ids and all rids
+    intersection = set(paper_used_ids).intersection(set(flattened_rids))
+    print(f"Paper used ids to Proccessed intersection: {len(intersection)}")
