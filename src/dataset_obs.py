@@ -58,11 +58,20 @@ if __name__ == "__main__":
 
     for split in range(0, 5):
         split_train_path = f"{dataset_path}/{split}-train.h5"
+        if not os.path.exists(split_train_path):
+            print(f"Split {split} train path does not exist")
+            continue
         split_train_rids, len_train = observe_dataset(split_train_path)
 
         split_val_path = f"{dataset_path}/{split}-valid.h5"
+        if not os.path.exists(split_val_path):
+            print(f"Split {split} val path does not exist")
+            continue
         split_val_rids, len_val = observe_dataset(split_val_path)
 
+        if not os.path.exists(split_val_path):
+            print(f"Split {split} val path does not exist")
+            continue
         split_test_path = f"{dataset_path}/{split}-test.h5"
         split_test_rids, len_test = observe_dataset(split_test_path)
 
