@@ -972,6 +972,7 @@ def main():
             checkpoint = torch.load(
                 f"{save_folder}/{wandb.config.model}_{wandb.config.modality}_split{split}_bestval.pt"
             )
+            print(f"Loading model from: {save_folder}/{wandb.config.model}_{wandb.config.modality}_split{split}_bestval.pt")
             msg = [
                 m.load_state_dict(checkpoint["model_state_dict"][i])
                 for i, m in enumerate(model)
