@@ -123,3 +123,14 @@ if __name__ == "__main__":
         paper_used_ids = [row[0] for row in reader[1:]]  # Skip header row
         print(f"Paper used ids: {len(paper_used_ids)}")
         print(f"Paper used ids: {paper_used_ids}")
+
+    # intersection of paper used ids and all rids
+
+    intersection = set(paper_used_ids).intersection(set(flattened_rids))
+    print(f"Intersection: {len(intersection)}")
+    # check if all rids are in the paper used ids
+    all_rids_in_paper = set(flattened_rids).issubset(set(paper_used_ids))
+    print(f"All rids in paper: {all_rids_in_paper}")
+    # check if all paper used ids are in the rids
+    all_paper_ids_in_rids = set(paper_used_ids).issubset(set(flattened_rids))
+    print(f"All paper ids in rids: {all_paper_ids_in_rids}")
