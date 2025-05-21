@@ -5,6 +5,7 @@ from adni import AdniDataset
 import os
 # dataset_path = "$(shell pwd)/data/processed/hdf5"
 # CONFIG ?= $(shell pwd)/config/config.yaml
+import csv
 
 config_path = os.path.join(os.path.dirname(__file__), "..", "config", "config.yaml")
 
@@ -102,4 +103,16 @@ if __name__ == "__main__":
     # Intersection of subdirectories
     intersection = set(all_subdirs).intersection(set(symlinked_subdirs))
     print(f"Intersection: {len(intersection)}")
+    
+
+    paper_used_ids_csv = os.path.join(
+        os.path.dirname(__file__), "data", "paper_adni-all-ids.csv"
+    )
+
+    with open(paper_used_ids_csv, "r") as file:
+        reader = csv.reader(file)
+        paper_used_ids = [row[0] for row in reader[1:]]  # Skip header row
+        print(f"Paper used ids: {len(paper_used_ids)}")
+        print(f"Paper used ids: {paper_used_ids}")
+
     
