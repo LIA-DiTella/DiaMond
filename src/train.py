@@ -1045,7 +1045,7 @@ def main():
         reinit="finish_previous",
         name=f"{config['model']}_{config['modality']}_average",
     )
-    
+
     if wandb.config.test:
         cm = np.sum(np.array(test_cm), axis=0)
         print("=======Finished Testing with Average of splits=======")
@@ -1077,7 +1077,7 @@ def main():
                 f"test_f1: {np.mean(test_f1):.6f} +- {np.std(test_f1):.6f}, "
                 f"test_auc: {np.mean(test_auc):.6f} +- {np.std(test_auc):.6f}, cm: {cm}, "
                 f"test_precision: {np.mean(test_precision):.6f} +- {np.std(test_precision):.6f}, "
-                f"test_recall: {np.mean(test_recall)::.6f} +- {np.std(test_recall):.6f}\n\n"
+                # f"test_recall: {np.mean(test_recall)::.6f} +- {np.std(test_recall):.6f}\n\n"
             )
 
 
