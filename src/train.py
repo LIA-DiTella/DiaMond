@@ -961,6 +961,16 @@ def main():
                 f"****************************Done with split {split}****************************"
             )
 
+            # Save the best model to wandb
+            if wandb.config.save:
+                wandb.save(
+                    f"{save_folder}/{wandb.config.model}_{wandb.config.modality}_split{split}_bestval.pt"
+                )
+                wandb.save(
+                    f"{save_folder}/{wandb.config.model}_{wandb.config.modality}_split{split}_latest.pt"
+                )
+            wandb.save(f"{save_folder}/_hyperparams.yaml")
+
         else:
             save_folder = f"../models/{wandb.config.model}/{experiment_name}"
             results_folder = save_folder
