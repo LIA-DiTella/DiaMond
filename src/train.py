@@ -559,9 +559,9 @@ def main():
 
     # Establecer método de inicio para multiprocessing
     # if torch.cuda.is_available():
-        # Configurar el método de inicio correcto para CUDA y multiprocessing
-        # torch.multiprocessing.set_start_method("spawn", force=True)
-        # print("Establecido método de inicio 'spawn' para multiprocessing con CUDA")
+    # Configurar el método de inicio correcto para CUDA y multiprocessing
+    # torch.multiprocessing.set_start_method("spawn", force=True)
+    # print("Establecido método de inicio 'spawn' para multiprocessing con CUDA")
 
     args = parse_args()
 
@@ -1035,6 +1035,17 @@ def main():
         # Make sure to finish the run at the end of each split
         wandb.finish()
 
+    wandb.init(
+        project=args.wandb_project,
+        entity=args.wandb_entity,
+        notes=experiment_name,
+        tags=[],
+        config=config,
+        mode=wandb_mode,
+        reinit="finish_previous",
+        name=f"{config['model']}_{config['modality']}_average",
+    )
+    
     if wandb.config.test:
         cm = np.sum(np.array(test_cm), axis=0)
         print("=======Finished Testing with Average of splits=======")
