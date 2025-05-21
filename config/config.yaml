@@ -29,7 +29,7 @@ epochs: 3800
 warmup_steps: 10
 
 save: True
-test: False
+test: True
 pretrained: Null
 
 ### wandb config
