@@ -17,12 +17,12 @@ def observe_dataset(dataset_file_path:str):
     wandb.init(
         project="DiaMond",
         entity="pardo",
-        notes="Dataset preview",
+        notes=f"Dataset preview - {dataset_file_path}",
         tags=[],
         config=config,
         mode="offline",
         reinit="finish_previous",
-        name="dataset_preview",
+        name=f"dataset_preview_{os.path.basename(dataset_file_path)}",
     )
 
     data = AdniDataset(
@@ -35,6 +35,15 @@ def observe_dataset(dataset_file_path:str):
     )
 
     print("data length: ", len(data))
+
+    wandb.log(
+        {
+            "dataset_file_path": dataset_file_path,
+            "dataset_length": len(data),
+            "dataset_rids": data._rid,
+            "dataset_rids_length": len(data._rid),
+        }
+    )
 
     wandb.finish()
     return data._rid, len(data._rid)
@@ -114,5 +123,3 @@ if __name__ == "__main__":
         paper_used_ids = [row[0] for row in reader[1:]]  # Skip header row
         print(f"Paper used ids: {len(paper_used_ids)}")
         print(f"Paper used ids: {paper_used_ids}")
-
-    
