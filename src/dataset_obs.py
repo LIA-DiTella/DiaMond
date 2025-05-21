@@ -149,7 +149,6 @@ if __name__ == "__main__":
         print(f"Paper used ids: {paper_used_ids}")
 
     # intersection of paper used ids and all rids
-
     intersection = set(paper_used_ids).intersection(set(flattened_rids))
     print(f"Intersection: {len(intersection)}")
     # check if all rids are in the paper used ids
@@ -167,6 +166,7 @@ if __name__ == "__main__":
     # remove "hdf5" from the list
     subdirs = [d for d in subdirs if d != "hdf5"]
     print(f"Processed path subdirs: {len(subdirs)}")
+    print(f"Processed path ids: {subdirs}")
 
     # intersection between paper used ids and all rids
     intersection = set(paper_used_ids).intersection(set(flattened_rids))
