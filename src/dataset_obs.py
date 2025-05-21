@@ -143,7 +143,8 @@ if __name__ == "__main__":
 
     with open(paper_used_ids_csv, "r") as file:
         reader = csv.reader(file)
-        paper_used_ids = [row[0] for row in reader[1:]]  # Skip header row
+        next(reader)  # Saltar la fila del encabezado
+        paper_used_ids = [row[0] for row in reader]  # Leer el resto de las filas
         print(f"Paper used ids: {len(paper_used_ids)}")
         print(f"Paper used ids: {paper_used_ids}")
 
